@@ -40,48 +40,77 @@ class ElfEncryptor:
                     print(f"{element} ", end="")
             print(">")
 
-    def mix(self):
+    def mix(self, fast=True, iterations=1):
         to_mix = [element for element in self.elements]
+        """
         to_mix.reverse() # The first elements to be mixed are at the end and poppable
         while(len(to_mix) > 0):
             element = to_mix.pop()
-            self.mix_single(element)
-             
+        """
+        for _ in range(iterations):
+            for element in to_mix:
+                #print(f"Mixing element {element}, There are {len(to_mix)} elements to mix after this")
+                if not fast:
+                    self.mix_single_slow(element)
+                else:
+                    self.mix_single(element)
+                
 
     def mix_single(self, element):
-        #print(f"Mixing element {element}")
         #self.render()
         if element.value == 0:
             element.mix_count += 1
             return
 
-        old_index = self.elements.index(element)
-        self.elements.remove(element)
-        self.elements.insert(old_index, "X")
-        #self.render()
-        element.mix_count += 1
-        if element.value < 0:
-            new_index = old_index + (element.value % (-len(self.elements) + 0))
-            # TODO This is how the example behaves, but why?
-            #if new_index == 0:
-            #    new_index = len(self.elements)
-            #print(new_index)
-            while(new_index < 0):
-                new_index += (len(self.elements) + 1)
-            #print(new_index)
+        initial_index = self.elements.index(element)
+        self.elements.pop(initial_index)
+        if element.value > 0:
+            dest_index = initial_index + element.value + 0
+            dest_index = dest_index % len(self.elements)
         else:
-            #print(f"Old Index + value + 1 = \n{old_index} + {element.value} + 1 \n All with Mod {len(self.elements)}")
-            if False: #(old_index + element.value + 1) >= (len(self.elements) * 2):
-                additional_value = -1
-            else:
-                additional_value = 0
-            new_index = (old_index + (element.value % (len(self.elements) + 0))+ additional_value + 1) % (len(self.elements) + 1)
+            dest_index = initial_index + element.value + 0
+            dest_index = dest_index % (-len(self.elements))
 
-        #print(f"Inserting {element.value} into index {new_index}")
-        self.elements.insert(new_index, element)
+        self.elements.insert(dest_index, element)
+
+
+    def mix_single_slow(self, element):
         #self.render()
-        self.elements.remove("X")
-        self.render()
+        if element.value == 0:
+            element.mix_count += 1
+            return
+
+        moves = element.value
+        while moves > 0:
+            self.swap(element, forward=True)
+            moves -= 1
+        while moves < 0:
+            self.swap(element, forward=False)
+            moves += 1        
+
+    def swap(self, element: ElfEncryptorElement, forward: bool):
+        item_index = self.elements.index(element)
+        dest_index = None
+        if forward:
+            # Handle Wrap Case
+            if item_index == (len(self.elements) - 1):
+                dest_index = 0
+            else:
+                dest_index = item_index + 1
+        else:
+            # Handle Wrap Case
+            if item_index == 0:
+                dest_index = (len(self.elements) - 1)
+            else:
+                dest_index = item_index - 1
+        
+        # Swap dest/item with placeholder
+        ele1 = self.elements[item_index]
+        self.elements[item_index] = self.elements[dest_index]
+        self.elements[dest_index] = ele1
+
+
+        
 
     def find_coordinates(self):
         zero_index = self.elements.index([element for element in self.elements if element.value == 0][0])
@@ -103,26 +132,27 @@ class ElfEncryptor:
 
 
 class Day20Tester:
-    def __init__(self):
+    def __init__(self, encryption_key=1):
         self.ee = ElfEncryptor()
+        self.encryption_key = encryption_key
 
     def consume(self, line: str):
-        self.ee.append(int(line))
+        self.ee.append(int(line) * self.encryption_key)
         
 
     def render(self):
         self.ee.render()
 
-    def mix(self):
-        self.ee.mix()
+    def mix(self, fast=True, iterations=1):
+        self.ee.mix(fast, iterations)
 
 
 
-def test_part_1():
-    print("Part 1")
+def test_part_demo():
+    print("Part DEMO")
     print("BEGIN")
     day20 = Day20Tester()
-    with open("Day20/Day20Data.txt", "r") as datafile:
+    with open("Day20/Day20DemoData.txt", "r") as datafile:
         for line in datafile:
             day20.consume(line.strip())
 
@@ -133,6 +163,65 @@ def test_part_1():
     coordinates = day20.ee.find_coordinates()
     print(f"Coordinates: {coordinates}")
     assert coordinates == 3
+
+@pytest.mark.skip(reason="Too Slow!")
+def test_part_1():
+    print("Part 1")
+    print("BEGIN")
+    day20 = Day20Tester()
+    with open("Day20/Day20Data.txt", "r") as datafile:
+        for line in datafile:
+            day20.consume(line.strip())
+
+    #day20.ee.contains_duplicates()
+    day20.render()
+    day20.mix(fast=False)
+    #day20.render()
+    coordinates = day20.ee.find_coordinates()
+    print(f"Coordinates: {coordinates}")
+    assert coordinates == 4066
+
+def test_part_1_fast():
+    print("Part 1")
+    print("BEGIN")
+    day20 = Day20Tester()
+    with open("Day20/Day20Data.txt", "r") as datafile:
+        for line in datafile:
+            day20.consume(line.strip())
+
+    #day20.ee.contains_duplicates()
+    #day20.render()
+    day20.mix(fast=True)
+    #day20.render()
+    coordinates = day20.ee.find_coordinates()
+    print(f"Coordinates: {coordinates}")
+    assert coordinates == 4066
+
+def test_part_2():
+    print("Part 2")
+    print("BEGIN")
+    day20 = Day20Tester(encryption_key=811589153)
+    with open("Day20/Day20Data.txt", "r") as datafile:
+        for line in datafile:
+            day20.consume(line.strip())
+
+    day20.mix(fast=True, iterations=10)
+    coordinates = day20.ee.find_coordinates()
+    print(f"Coordinates: {coordinates}")
+    assert coordinates == 6704537992933
+
+def test_part_2_demo():
+    print("Part 2")
+    print("BEGIN")
+    day20 = Day20Tester(encryption_key=811589153)
+    with open("Day20/Day20DemoData.txt", "r") as datafile:
+        for line in datafile:
+            day20.consume(line.strip())
+
+    day20.mix(fast=True, iterations=10)
+    coordinates = day20.ee.find_coordinates()
+    print(f"Coordinates: {coordinates}")
+    assert coordinates == 1623178306
 
 def test_positive_mixe_1():
     print("Positive Mix 1")
@@ -229,16 +318,3 @@ def test_negative_mix_100():
         print(f"Checking elements[{(i + 1) % 4}] == {ee.elements[(i + 1) % 4].value} == {i}")
         assert ee.elements[(i + 1) % 4].value == i
 
-def test_positive_n3():
-    print("Positive Mix -3")
-    ee = ElfEncryptor()
-    for e in [1, -3, 2, 3, -2, 0, 4]:
-        ee.append(e)
-
-    ee.render()
-    ee.mix_single(ee.elements[1])
-    ee.render()
-
-    assert ee.elements[3].value == -2
-    assert ee.elements[4].value == -3
-    assert ee.elements[5].value == 0
