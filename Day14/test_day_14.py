@@ -159,7 +159,7 @@ class Day14Tester2(Day14Tester):
         super().__init__()
         self.pit = Pit2()
 
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_part_1():
     print("Part 1")
     print("BEGIN")
@@ -173,7 +173,9 @@ def test_part_1():
         units += 1
     print(units)
     day14.render()
+    assert units == 961 # 961 units of sand dropped into this structure
 
+@pytest.mark.skip(reason="Takes 45 seconds")
 def test_part_2():
     print("Part 1")
     print("BEGIN")
