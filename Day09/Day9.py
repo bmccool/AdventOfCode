@@ -2,6 +2,24 @@ from typing import Tuple
 from collections import deque 
 from termcolor import colored
 
+class Ropes:
+    def __init__(self, num_knots):
+        self.num_ropes = num_knots - 1
+        self.ropes = []
+        for _ in range(self.num_ropes):
+            self.ropes.append(Rope())
+
+    def move(self, direction: str):
+        self.ropes[0].move(direction)
+        for index in range(1, self.num_ropes):
+            self.ropes[index].H = self.ropes[index-1].T
+            self.ropes[index].follow()
+
+    def multi_move(self, move: str):
+        move = move.split()
+        for _ in range(int(move[1])):
+            self.move(move[0])
+        
 
 class Rope:
     def __init__(self):
@@ -23,7 +41,7 @@ class Rope:
                 self.H = (self.H[0],     self.H[1] + 1)
         self.follow()
         #print(f"H:{self.H} T:{self.T}")
-        self.tail_map.add((self.T))
+        #self.tail_map.add((self.T))
         #print(self.tail_map)
 
     def multi_move(self, move: str):
@@ -48,3 +66,5 @@ class Rope:
         if move == "Y":
             if (abs(self.H[0] - self.T[0]) > 0):
                 self.T = (self.T[0] + (1 if ((self.H[0] - self.T[0]) > 0) else -1), self.T[1])
+                
+        self.tail_map.add((self.T))
