@@ -77,7 +77,6 @@ class Field:
                             move = True
                     case _:
                         print("SOMETHING WENT WRONG, THIS DIRECTION ISNT ON THE COMPASS")
-                        print(_)
 
             #self.show_point(elf, proposed_direction, move)
             if move and proposed_coordinates:
@@ -257,10 +256,11 @@ def test_part_2():
         #print(f.elves)
         elves_moved = f.round()
         rounds += 1
-        print(f"END OF ROUND {rounds}, moved {elves_moved} elves")
+        #print(f"END OF ROUND {rounds}, moved {elves_moved} elves")
         if elves_moved == 0:
             break
 
     
     f.recalculate()
     print(rounds)
+    assert rounds == 1021

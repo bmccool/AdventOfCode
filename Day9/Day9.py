@@ -48,16 +48,3 @@ class Rope:
         if move == "Y":
             if (abs(self.H[0] - self.T[0]) > 0):
                 self.T = (self.T[0] + (1 if ((self.H[0] - self.T[0]) > 0) else -1), self.T[1])
-
-
-
-
-
-print("Part 1: How many unique positions did t")
-rope = Rope()
-with open("Day9Data.txt", "r") as datafile:
-    for line in datafile:
-        rope.multi_move(line.strip())
-
-print(len(rope.tail_map))
-
