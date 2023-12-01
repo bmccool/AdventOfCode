@@ -5,13 +5,34 @@ import random
 import pytest
 import math
 import copy
-from functools import partial
 
-from termcolor import colored
-#colored(tree.height, 'red')
+import functools
+from functools import partial
+from typing import Any, Callable
+from opentelemetry.trace import Tracer
+
+from pymccool.logging import Logger, LoggerKwargs
+from pymccool.tracing import get_tracer, get_decorator
+from uuid import uuid1
+uuid = uuid1()
+logger = Logger(LoggerKwargs(
+    app_name="Day23",
+    grafana_loki_endpoint="https://loki.capricorn.brendonmccool.com/loki/api/v1/push",
+    uuid=uuid
+    #500 "POST /loki/api/v1/push HTTP/1.1" 85 "-" "GrafanaAgent/" "-"
+    #401 "POST /loki/api/v1/push HTTP/1.1" 10 "-" "python-requests/2.28.2" "192.168.8.113"
+))
+
+tracer = get_tracer(service_name="Day23",
+                    endpoint="https://otel-rec.capricorn.brendonmccool.com/v1/traces",
+                    uuid=uuid)
+
+instrument = get_decorator(tracer)
+        
 
 
 class Field:
+    @instrument
     def __init__(self):
         # Smallest containing rectangle
         self.left = None
@@ -26,10 +47,12 @@ class Field:
 
         self.compass = ["N", "S", "W", "E"]
 
+    @instrument
     def round(self):
         # Get proposed moves for each elf and add it to a dictionary
         # the key is the coordinate destination and the value is the list of coordinate sources
         # (if multiple elves want the same spot)
+        logger.info("High from ROUND")
         proposed_moves = {}
         elves_moved = 0
         for elf in self.elves:
@@ -76,7 +99,7 @@ class Field:
                         else:
                             move = True
                     case _:
-                        print("SOMETHING WENT WRONG, THIS DIRECTION ISNT ON THE COMPASS")
+                        logger.info("SOMETHING WENT WRONG, THIS DIRECTION ISNT ON THE COMPASS")
 
             #self.show_point(elf, proposed_direction, move)
             if move and proposed_coordinates:
@@ -91,37 +114,42 @@ class Field:
             move = proposed_moves.popitem()
             if len(move[1]) == 1:
                 #DO MOVE
-                #print(f"Moving from ({move[1][0]}) -> ({move[0]})")
+                #logger.info(f"Moving from ({move[1][0]}) -> ({move[0]})")
                 #self.show_point(move[1][0])
                 self.elves.remove(move[1][0])
                 self.place_elf(move[0])
                 elves_moved += 1
             else:
                 continue
-                print(f"Too many elves wanted to move to {move[0]}. ===== {move[1]}")
+                logger.info(f"Too many elves wanted to move to {move[0]}. ===== {move[1]}")
 
         # Update thd compass
         self.compass.append(self.compass.pop(0))
         return elves_moved
-
+    
+    @instrument
     def show_point(self, coordinates, direction=None, move=None):
-        print("SHOW POINT")
+        
+        logger.info("SHOW POINT")
         x, y = coordinates
         line_no = 0
+        line_to_print = ""
         for j in range(y-1, y+2):
             for i in range(x-1, x+2):
                 if (i, j) in self.elves:
-                    print("#", end="")
+                    line_to_print += "#"
                 else:
-                    print(".", end="")
+                    line_to_print += "."
             if (line_no == 0):
-                print(f"   Compass = {self.compass}")
+                line_to_print += f"   Compass = {self.compass}"
             elif (line_no == 1):
-                print(f"   Move?: {move}")
+                line_to_print += f"   Move?: {move}"
             else:
-                print(f"   Direction: {direction}")
+                line_to_print += f"   Direction: {direction}"
+            logger.info(line_to_print)
             line_no += 1
 
+    #@tracer.start_as_current_span("Place Elf")
     def place_elf(self, coordinates):
         # Deal with first input
         if self.bottom == None:
@@ -131,15 +159,16 @@ class Field:
             self.bottom = coordinates[0]
 
         if coordinates in self.elves:
-            print("THIS SEATS TAKEN!")
+            logger.info("THIS SEATS TAKEN!")
 
         self.elves.add(coordinates)
         self.left = min(self.left, coordinates[0])
         self.right = max(self.right, coordinates[0])
         self.top = min(self.top, coordinates[1])
         self.bottom = max(self.bottom, coordinates[1])
-        #print(f"Inserted elf at ({coordinates}), LR, TB = {self.left}, {self.right}, {self.top}, {self.bottom}")
+        #logger.info(f"Inserted elf at ({coordinates}), LR, TB = {self.left}, {self.right}, {self.top}, {self.bottom}")
 
+    #@tracer.start_as_current_span("Consume Line")
     def consume(self, line):
         for i, marker in enumerate(line):
             if marker == "#":
@@ -147,15 +176,17 @@ class Field:
         self.lines_consumed += 1
 
 
+    @instrument
     def render(self):
         for j in range(self.top, self.bottom + 1):
             for i in range(self.left, self.right + 1):
                 if ((i, j) in self.elves):
-                    print("#", end="")
+                    logger.info("#", end="")
                 else:
-                    print(".", end="")
-            print()
+                    logger.info(".", end="")
+            logger.info()
 
+    @instrument
     def recalculate(self):
         self.top = None
         self.bottom = None
@@ -175,6 +206,7 @@ class Field:
             self.left = min(self.left, elf[0])
             self.right = max(self.right, elf[0])
 
+    @instrument
     def get_empty_spots(self):
         spots = 0
         for j in range(self.top, self.bottom + 1):
@@ -184,10 +216,10 @@ class Field:
         return spots
 
 
-
+@instrument
 def test_part_demo():
-    print("Part DEMO")
-    print("BEGIN")
+    logger.info("Part DEMO")
+    logger.info("BEGIN")
     f = Field()
     with open("Day23/Day23DemoData.txt", "r") as datafile:
         for line in datafile:
@@ -195,13 +227,14 @@ def test_part_demo():
 
     f.render()
     for _ in range(10):
-        print(f.elves)
+        logger.info(f.elves)
         f.round()
         f.render()
 
+@instrument
 def test_part_demo_2():
-    print("Part DEMO 2")
-    print("BEGIN")
+    logger.info("Part DEMO 2")
+    logger.info("BEGIN")
     f = Field()
     with open("Day23/Day23DemoData2.txt", "r") as datafile:
         for line in datafile:
@@ -209,19 +242,24 @@ def test_part_demo_2():
 
     #f.render()
     for _ in range(10):
-        #print(f.elves)
+        #logger.info(f.elves)
         f.round()
-        #print(f"END OF ROUND {_ + 1}")
+        #logger.info(f"END OF ROUND {_ + 1}")
         #f.render()
 
     spots = f.get_empty_spots()
-    print(spots)
-    print(f.top, f.bottom, f.left, f.right)
+    logger.info(spots)
+    logger.info(f.top, f.bottom, f.left, f.right)
     assert spots == 110
 
+def test_log():
+    logger.info("Test Loki Message")
+    assert True
+
+@instrument
 def test_part_1():
-    print("Part 1")
-    print("BEGIN")
+    logger.info("Part 1")
+    logger.info("BEGIN")
     f = Field()
     with open("Day23/Day23Data.txt", "r") as datafile:
         for line in datafile:
@@ -229,22 +267,23 @@ def test_part_1():
 
     #f.render()
     for _ in range(10):
-        #print(f.elves)
+        #logger.info(f.elves)
         elves_moved = f.round()
-        print(f"END OF ROUND {_ + 1}, moved {elves_moved} elves")
+        logger.info(f"END OF ROUND {_ + 1}, moved {elves_moved} elves")
         #f.render()
 
     
     f.recalculate()
     #f.render()
     spots = f.get_empty_spots()
-    print(spots)
-    print(f.top, f.bottom, f.left, f.right)
+    logger.info(spots)
+    logger.info(f"{f.top},  {f.bottom}, {f.left}, {f.right}")
     assert spots == 4049
         
+@instrument
 def test_part_2():
-    print("Part 2")
-    print("BEGIN")
+    logger.info("Part 2")
+    logger.info("BEGIN")
     f = Field()
     with open("Day23/Day23Data.txt", "r") as datafile:
         for line in datafile:
@@ -253,14 +292,14 @@ def test_part_2():
     #f.render()
     rounds = 0
     while True:
-        #print(f.elves)
+        #logger.info(f.elves)
         elves_moved = f.round()
         rounds += 1
-        #print(f"END OF ROUND {rounds}, moved {elves_moved} elves")
+        #logger.info(f"END OF ROUND {rounds}, moved {elves_moved} elves")
         if elves_moved == 0:
             break
 
     
     f.recalculate()
-    print(rounds)
+    logger.info(rounds)
     assert rounds == 1021
