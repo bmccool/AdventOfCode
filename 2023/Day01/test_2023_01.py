@@ -25,7 +25,7 @@ class CalibrationEater:
         return calibration_sum
 
     def get_calibration_sum_2(self):
-        """ Find all calibrations in the file and return the sum with part 1 rules. """
+        """ Find all calibrations in the file and return the sum with part 2 rules. """
         calibration_sum = 0
         with open(self.filename, 'r', encoding="utf-8") as f:
             calibration_sum = \
