@@ -140,7 +140,7 @@ def test_sanfu2dec():
 def test_part_demo():
     print("Part DEMO")
     print("BEGIN")
-    with open("Day25/Day25DemoData.txt", "r") as datafile:
+    with open("2022/Day25/Day25DemoData.txt", "r") as datafile:
         sum = 0
         for line in datafile:
             sum = sum + sanfu2dec(line.strip())
@@ -153,7 +153,7 @@ def test_part_demo():
 def test_part_1():
     print("Part 1")
     print("BEGIN")
-    with open("Day25/Day25Data.txt", "r") as datafile:
+    with open("2022/Day25/Day25Data.txt", "r") as datafile:
         sum = 0
         for line in datafile:
             sum = sum + sanfu2dec(line.strip())

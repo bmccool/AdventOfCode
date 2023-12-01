@@ -265,7 +265,7 @@ def get_neighbors(map: Mappy, node: Node, legal: bool=True):
 def test_part_1():
     print("Part 1")
     _map = Mappy()
-    with open("Day12/Day12Data.txt", "r") as datafile:
+    with open("2022/Day12/Day12Data.txt", "r") as datafile:
         for line in datafile:
             line = line.strip()
             _map.consume_line(line)
@@ -302,7 +302,7 @@ def test_part_1():
 def test_part_2():
     print("Part 2")
     _map = Mappy()
-    with open("Day12/Day12Data.txt", "r") as datafile:
+    with open("2022/Day12/Day12Data.txt", "r") as datafile:
         for line in datafile:
             line = line.strip()
             _map.consume_line(line)

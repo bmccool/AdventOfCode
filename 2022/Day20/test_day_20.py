@@ -152,7 +152,7 @@ def test_part_demo():
     print("Part DEMO")
     print("BEGIN")
     day20 = Day20Tester()
-    with open("Day20/Day20DemoData.txt", "r") as datafile:
+    with open("2022/Day20/Day20DemoData.txt", "r") as datafile:
         for line in datafile:
             day20.consume(line.strip())
 
@@ -169,7 +169,7 @@ def test_part_1():
     print("Part 1")
     print("BEGIN")
     day20 = Day20Tester()
-    with open("Day20/Day20Data.txt", "r") as datafile:
+    with open("2022/Day20/Day20Data.txt", "r") as datafile:
         for line in datafile:
             day20.consume(line.strip())
 
@@ -185,7 +185,7 @@ def test_part_1_fast():
     print("Part 1")
     print("BEGIN")
     day20 = Day20Tester()
-    with open("Day20/Day20Data.txt", "r") as datafile:
+    with open("2022/Day20/Day20Data.txt", "r") as datafile:
         for line in datafile:
             day20.consume(line.strip())
 
@@ -201,7 +201,7 @@ def test_part_2():
     print("Part 2")
     print("BEGIN")
     day20 = Day20Tester(encryption_key=811589153)
-    with open("Day20/Day20Data.txt", "r") as datafile:
+    with open("2022/Day20/Day20Data.txt", "r") as datafile:
         for line in datafile:
             day20.consume(line.strip())
 
@@ -214,7 +214,7 @@ def test_part_2_demo():
     print("Part 2")
     print("BEGIN")
     day20 = Day20Tester(encryption_key=811589153)
-    with open("Day20/Day20DemoData.txt", "r") as datafile:
+    with open("2022/Day20/Day20DemoData.txt", "r") as datafile:
         for line in datafile:
             day20.consume(line.strip())
 

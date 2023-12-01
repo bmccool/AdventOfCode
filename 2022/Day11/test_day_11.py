@@ -8,7 +8,7 @@ def test_day_11_part_1():
 
     print("Part 1: What is the level of monkey business after 20 rounds of stuff-slinging simian shenanigans?")
     monkies = []
-    with open("Day11/Day11Data.txt", "r") as datafile:
+    with open("2022/Day11/Day11Data.txt", "r") as datafile:
         for line in datafile:
             line = line.strip().strip(',')
             match(line.split()):
@@ -72,7 +72,7 @@ def test_day_11_part_2():
 
     print("Part 1: What is the level of monkey business after 10000 rounds of stuff-slinging simian shenanigans? - NO WORRY REDUCTION")
     monkies = []
-    with open("Day11/Day11Data.txt", "r") as datafile:
+    with open("2022/Day11/Day11Data.txt", "r") as datafile:
         for line in datafile:
             line = line.strip().strip(',')
             match(line.split()):

@@ -164,7 +164,7 @@ def test_part_1():
     print("Part 1")
     print("BEGIN")
     day14 = Day14Tester()
-    with open("Day14/Day14Data.txt", "r") as datafile:
+    with open("2022/Day14/Day14Data.txt", "r") as datafile:
         for line in datafile:
             day14.consume(line.strip())
     units = 0
@@ -180,7 +180,7 @@ def test_part_2():
     print("Part 1")
     print("BEGIN")
     day14 = Day14Tester2()
-    with open("Day14/Day14Data.txt", "r") as datafile:
+    with open("2022/Day14/Day14Data.txt", "r") as datafile:
         for line in datafile:
             day14.consume(line.strip())
     units = 1 # Adding extra one because we can't (don't) cover up the spout

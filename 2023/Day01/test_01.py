@@ -3,6 +3,12 @@ from dataclasses import dataclass
 from typing import List
 from rich import print # pylint: disable=redefined-builtin
 
+from pymccool.logging import Logger, LoggerKwargs
+
+logger = Logger(LoggerKwargs(
+    app_name="AOC2023",
+))
+
 WORKING_DIR = '2023/Day01/'
 
 @dataclass
@@ -96,7 +102,7 @@ def test_part_1():
     """Test part 1"""
     ce = CalibrationEater(WORKING_DIR + 'input.txt')
     answer = ce.get_calibration_sum()
-    print(answer)
+    logger.info(f"Part1 answer: {answer}")
     assert answer == 55130
 
 def test_sample_2():
@@ -108,5 +114,5 @@ def test_part_2():
     """Test part 2"""
     ce = CalibrationEater(WORKING_DIR + 'input.txt')
     answer = ce.get_calibration_sum_2()
-    print(answer)
+    logger.info(f"Part2 answer: {answer}")
     assert answer == 54985

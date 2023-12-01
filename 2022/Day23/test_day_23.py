@@ -1,38 +1,19 @@
 from __future__ import annotations
-from collections import deque
-from typing import List, Callable
-import random
-import pytest
-import math
-import copy
-
-import functools
-from functools import partial
-from typing import Any, Callable
-from opentelemetry.trace import Tracer
 
 from pymccool.logging import Logger, LoggerKwargs
 from pymccool.tracing import get_tracer, get_decorator
-from uuid import uuid1
-uuid = uuid1()
+
+
 logger = Logger(LoggerKwargs(
     app_name="Day23",
-    grafana_loki_endpoint="https://loki.capricorn.brendonmccool.com/loki/api/v1/push",
-    uuid=uuid
+    #grafana_loki_endpoint="https://loki.capricorn.brendonmccool.com/loki/api/v1/push",
+    #uuid=uuid
     #500 "POST /loki/api/v1/push HTTP/1.1" 85 "-" "GrafanaAgent/" "-"
     #401 "POST /loki/api/v1/push HTTP/1.1" 10 "-" "python-requests/2.28.2" "192.168.8.113"
 ))
 
-tracer = get_tracer(service_name="Day23",
-                    endpoint="https://otel-rec.capricorn.brendonmccool.com/v1/traces",
-                    uuid=uuid)
-
-instrument = get_decorator(tracer)
-        
-
 
 class Field:
-    @instrument
     def __init__(self):
         # Smallest containing rectangle
         self.left = None
@@ -47,12 +28,10 @@ class Field:
 
         self.compass = ["N", "S", "W", "E"]
 
-    @instrument
     def round(self):
         # Get proposed moves for each elf and add it to a dictionary
         # the key is the coordinate destination and the value is the list of coordinate sources
         # (if multiple elves want the same spot)
-        logger.info("High from ROUND")
         proposed_moves = {}
         elves_moved = 0
         for elf in self.elves:
@@ -127,7 +106,6 @@ class Field:
         self.compass.append(self.compass.pop(0))
         return elves_moved
     
-    @instrument
     def show_point(self, coordinates, direction=None, move=None):
         
         logger.info("SHOW POINT")
@@ -149,7 +127,6 @@ class Field:
             logger.info(line_to_print)
             line_no += 1
 
-    #@tracer.start_as_current_span("Place Elf")
     def place_elf(self, coordinates):
         # Deal with first input
         if self.bottom == None:
@@ -168,7 +145,6 @@ class Field:
         self.bottom = max(self.bottom, coordinates[1])
         #logger.info(f"Inserted elf at ({coordinates}), LR, TB = {self.left}, {self.right}, {self.top}, {self.bottom}")
 
-    #@tracer.start_as_current_span("Consume Line")
     def consume(self, line):
         for i, marker in enumerate(line):
             if marker == "#":
@@ -176,17 +152,16 @@ class Field:
         self.lines_consumed += 1
 
 
-    @instrument
     def render(self):
         for j in range(self.top, self.bottom + 1):
+            line = ""
             for i in range(self.left, self.right + 1):
                 if ((i, j) in self.elves):
-                    logger.info("#", end="")
+                    line += "#"
                 else:
-                    logger.info(".", end="")
-            logger.info()
+                    line += "."
+            logger.info(line)
 
-    @instrument
     def recalculate(self):
         self.top = None
         self.bottom = None
@@ -206,7 +181,6 @@ class Field:
             self.left = min(self.left, elf[0])
             self.right = max(self.right, elf[0])
 
-    @instrument
     def get_empty_spots(self):
         spots = 0
         for j in range(self.top, self.bottom + 1):
@@ -216,12 +190,11 @@ class Field:
         return spots
 
 
-@instrument
 def test_part_demo():
     logger.info("Part DEMO")
     logger.info("BEGIN")
     f = Field()
-    with open("Day23/Day23DemoData.txt", "r") as datafile:
+    with open("2022/Day23/Day23DemoData.txt", "r") as datafile:
         for line in datafile:
             f.consume(line.strip())
 
@@ -231,12 +204,11 @@ def test_part_demo():
         f.round()
         f.render()
 
-@instrument
 def test_part_demo_2():
     logger.info("Part DEMO 2")
     logger.info("BEGIN")
     f = Field()
-    with open("Day23/Day23DemoData2.txt", "r") as datafile:
+    with open("2022/Day23/Day23DemoData2.txt", "r") as datafile:
         for line in datafile:
             f.consume(line.strip())
 
@@ -249,19 +221,18 @@ def test_part_demo_2():
 
     spots = f.get_empty_spots()
     logger.info(spots)
-    logger.info(f.top, f.bottom, f.left, f.right)
+    logger.info(f"{f.top}, {f.bottom}, {f.left}, {f.right}")
     assert spots == 110
 
 def test_log():
     logger.info("Test Loki Message")
     assert True
 
-@instrument
 def test_part_1():
     logger.info("Part 1")
     logger.info("BEGIN")
     f = Field()
-    with open("Day23/Day23Data.txt", "r") as datafile:
+    with open("2022/Day23/Day23Data.txt", "r") as datafile:
         for line in datafile:
             f.consume(line.strip())
 
@@ -280,12 +251,11 @@ def test_part_1():
     logger.info(f"{f.top},  {f.bottom}, {f.left}, {f.right}")
     assert spots == 4049
         
-@instrument
 def test_part_2():
     logger.info("Part 2")
     logger.info("BEGIN")
     f = Field()
-    with open("Day23/Day23Data.txt", "r") as datafile:
+    with open("2022/Day23/Day23Data.txt", "r") as datafile:
         for line in datafile:
             f.consume(line.strip())
 

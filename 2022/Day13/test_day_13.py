@@ -109,7 +109,7 @@ class Day13TesterPart2(Day13Tester):
 def test_part_1():
     print("Part 1")
     day13 = Day13Tester()
-    with open("Day13/Day13Data.txt", "r") as datafile:
+    with open("2022/Day13/Day13Data.txt", "r") as datafile:
         for line in datafile:
             line = line.strip()
             day13.consume(line)
@@ -118,7 +118,7 @@ def test_part_1():
 def test_part_2():
     print("Part 2")
     day13 = Day13TesterPart2()
-    with open("Day13/Day13Data.txt", "r") as datafile:
+    with open("2022/Day13/Day13Data.txt", "r") as datafile:
         for line in datafile:
             line = line.strip()
             day13.consume(line)
