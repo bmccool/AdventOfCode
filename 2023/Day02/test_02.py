@@ -1,7 +1,6 @@
-""" Advent of Code 2023 Day 01 """
+""" Advent of Code 2023 Day 02 """
 from dataclasses import dataclass, field
 from typing import List, Dict
-from rich import print # pylint: disable=redefined-builtin
 
 from pymccool.logging import Logger, LoggerKwargs
 
@@ -26,31 +25,33 @@ class Game:
     rounds: List[Round]
     known_totals: Round = field(default_factory=Round)
 
-
 class GameEater:
+    """ Class to eat games from a file """
     def __init__(self, filename):
         self.filename = filename
         self.games: Dict[int, Game] = {}
 
     def get_game_from_line(self, line: str) -> Game:
+        """ Parse a game from a line """
         line = line.lower()
         rounds: List[Round] = []
         game_number = int(line.split(":")[0].strip("game "))
         for string_round in line.split(":")[1].strip().split(";"):
             string_round = string_round.strip()
-            round = Round()
+            round_ = Round()
             for entry in string_round.split(","):
                 entry = entry.strip()
                 if "red" in entry:
-                    round.red = int(entry.split(" ")[0])
+                    round_.red = int(entry.split(" ")[0])
                 elif "green" in entry:
-                    round.green = int(entry.split(" ")[0])
+                    round_.green = int(entry.split(" ")[0])
                 elif "blue" in entry:
-                    round.blue = int(entry.split(" ")[0])
-            rounds.append(round)
+                    round_.blue = int(entry.split(" ")[0])
+            rounds.append(round_)
         return Game(game_number, rounds)
 
     def eat_games(self):
+        """ Run through the file and eat all the games """
         with open(self.filename, 'r', encoding="utf-8") as f:
             for line in f.readlines():
                 game = self.get_game_from_line(line)
@@ -58,39 +59,44 @@ class GameEater:
 
     @staticmethod
     def is_game_possible(max_round: Round, game: Game) -> bool:
+        """ Check if a game is possible given a particular round """
         ret_val = True
-        for round in game.rounds:
-            if round.red > max_round.red:
+        for round_ in game.rounds:
+            if round_.red > max_round.red:
                 ret_val = False
-            if round.green > max_round.green:
+            if round_.green > max_round.green:
                 ret_val = False
-            if round.blue > max_round.blue:
+            if round_.blue > max_round.blue:
                 ret_val = False
         #logger.info(f"Game {game.id} is possible: {ret_val}")
         return ret_val
 
     def find_possible_games(self, max_round: Round) -> List[int]:
+        """ Find all possible games given a particular round, return a list of Game IDs """
         possible_rounds: List[int] = []
         for game in self.games.values():
             if not self.is_game_possible(max_round, game):
                 continue
             possible_rounds.append(game.id)
         return possible_rounds
-    
+
     def calculate_known_totals(self):
+        """ Calculate the known totals for each game """
         for game in self.games.values():
-            for round in game.rounds:
-                game.known_totals.red = max(game.known_totals.red, round.red)
-                game.known_totals.green = max(game.known_totals.green, round.green)
-                game.known_totals.blue = max(game.known_totals.blue, round.blue)
+            for round_ in game.rounds:
+                game.known_totals.red = max(game.known_totals.red, round_.red)
+                game.known_totals.green = max(game.known_totals.green, round_.green)
+                game.known_totals.blue = max(game.known_totals.blue, round_.blue)
 
 def test_sanity():
     """Sanity check """
     assert True
 
 def test_get_game_from_line():
+    """ Test get_game_from_line """
     ge = GameEater(WORKING_DIR + "Day01Data.txt")
-    game = ge.get_game_from_line("Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red")
+    game = ge.get_game_from_line(
+        "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red")
     test_game = Game(4, [Round(3, 1, 6), Round(6, 3, 0), Round(14, 3, 15)])
     assert game == test_game
 
@@ -124,5 +130,6 @@ def test_part_2():
     ge = GameEater(WORKING_DIR + 'input.txt')
     ge.eat_games()
     ge.calculate_known_totals()
-    s  = sum([(game.known_totals.red * game.known_totals.green * game.known_totals.blue) for game in ge.games.values()])
+    s  = sum([(game.known_totals.red * game.known_totals.green * game.known_totals.blue)
+               for game in ge.games.values()])
     logger.info(f"Sum of all game powers: {s}")

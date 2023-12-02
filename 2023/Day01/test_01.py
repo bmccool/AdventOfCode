@@ -22,6 +22,14 @@ class CalibrationEater:
     def __init__(self, filename):
         self.filename = filename
 
+    def get_calibration_sum(self):
+        """ Find all calibrations in the file and return the sum with part 1 rules. """
+        calibration_sum = 0
+        with open(self.filename, 'r', encoding="utf-8") as f:
+            calibration_sum = \
+                sum([int(self.get_calibration_from_line(line)) for line in f.readlines()])
+        return calibration_sum
+
     def get_calibration_sum_2(self):
         """ Find all calibrations in the file and return the sum with part 2 rules. """
         calibration_sum = 0
@@ -29,6 +37,24 @@ class CalibrationEater:
             calibration_sum = \
                 sum([int(self.get_calibration_from_line_2(line)) for line in f.readlines()])
         return calibration_sum
+
+    def get_calibration_from_line(self, line: str) -> int:
+        """
+        Find the calibration in the line with Part1 rules.
+        Use the first and last digits found concatenated as the calibration.
+        Ignore written numbers.
+        """
+        digit_string = '0123456789'
+        calibration = []
+        for char in line:
+            if char in digit_string:
+                calibration.append(char)
+
+        # Combine first and last digit
+        first = calibration[0]
+        last = calibration[-1]
+
+        return int(''.join([first, last]))
 
     def get_calibration_from_line_2(self, line: str) -> int:
         """
