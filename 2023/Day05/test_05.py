@@ -1,5 +1,6 @@
 """ Advent of Code 2023 Day 05 """
-from typing import Dict, List
+from typing import Dict, List, Optional
+from dataclasses import dataclass
 
 from pymccool.logging import Logger, LoggerKwargs
 
@@ -9,12 +10,41 @@ logger = Logger(LoggerKwargs(
 
 WORKING_DIR = '2023/Day05/'
 
+@dataclass
+class Interval:
+    """ An INCLUSIVE interval """
+    start: int
+    stop: int
+
+    def __contains__(self, item: int) -> bool:
+        """ Check if an item is in the interval """
+        return item >= self.start and item < self.stop
+
+    def __repr__(self) -> str:
+        """ String representation of the interval """
+        return f"[{self.start}, {self.stop}]"
+
+    def __len__(self) -> int:
+        """ Length of the interval """
+        return self.stop - self.start
 
 class Section:
+    """ A section of a map (mapping from one range to another)"""
     def __init__(self, line: str):
         parts = [int(part) for part in line.strip().split()]
         self.source_range: range = range(parts[1], parts[1] + parts[2])
         self.destination_range: range = range(parts[0], parts[0] + parts[2])
+
+    def __repr__(self) -> str:
+        return f"{self.source_range} -> {self.destination_range}"
+
+class IntervalSection:
+    """ A section made out of intervals instead of ranges """
+    def __init__(self, section: Section):
+        self.source_range: Interval = Interval(section.source_range.start,
+                                               section.source_range.stop - 1)
+        self.destination_range: Interval = Interval(section.destination_range.start,
+                                                    section.destination_range.stop - 1)
 
     def __repr__(self) -> str:
         return f"{self.source_range} -> {self.destination_range}"
@@ -27,83 +57,16 @@ class Map:
     def __repr__(self) -> str:
         """ String representation of the map """
         return "\n" + "\n".join([s.__repr__() for s in self.sections])
-    
+
     def get_destination(self, source: int) -> int:
         """ Get the destination of a source """
         for section in self.sections:
             if source in section.source_range:
                 return source + (section.destination_range.start - section.source_range.start)
         return source
-    
-    def get_destination_ranges_from_ranges(self, source_ranges: List[range]) -> List[range]:
-        """ Get the destination ranges of a source range """
-        starting_seeds = get_num_seeds_in_ranges(source_ranges)
-        ret_val: List[range] = []
-        for source_range in source_ranges:
-            ret_val.extend(self.get_destination_ranges_from_range(source_range))
-        logger.info(ret_val)
-        assert get_num_seeds_in_ranges(ret_val) == starting_seeds
-        return ret_val
-    
-    def get_destination_ranges_from_range(self, source: range) -> List[range]:
-        """ Get the destination ranges of a source range """
-        current_range = source
-        ret_val: List[range] = []
-        logger.info(f"Need to map {len(current_range)} seeds")
-        while True:
-            closest_section: Section = None
-            for section in self.sections:
-                movement = section.destination_range.start - section.source_range.start
-                difference = current_range.start - section.source_range.start
-                if not closest_section:
-                    logger.info(f"Section: {section}, current_range: {current_range}")
-                    if section.source_range.start > current_range.start:
-                        closest_section = section
-                elif (abs(difference) < abs(current_range.start - closest_section.source_range.start)) and \
-                        (section.source_range.start > current_range.start):
-                    closest_section = section
-
-                if current_range.start in section.source_range:
-                    logger.info(f"Section: {section}, current_range: {current_range}, Movement: {movement}")
-                    if current_range.stop <= section.source_range.stop:
-                        # This range is entirely in the section
-                        ret_range = range(current_range.start + movement, current_range.stop + movement)
-                        ret_val.append(ret_range)
-                        logger.info(f"Adding dest range: {ret_range}, from {current_range}, with section {section}. Done with range.")
-                        logger.info(f"Mapped {len(ret_range)} seeds, {0} seeds left")
-                        return ret_val
-                    else:
-                        ret_range = range(current_range.start + movement, section.source_range.stop + movement)
-                        ret_val.append(ret_range)
-                        new_range = range(section.source_range.stop, current_range.stop)
-                        logger.info(f"Adding dest range: {ret_range}, from {current_range}, with section {section}. -> new_range: {new_range}")
-                        logger.info(f"Mapped {len(ret_range)} seeds, {len(new_range)} seeds left")
-                        current_range = new_range
-                        break
-            else:
-                if closest_section:
-                    ret_range = range(current_range.start, closest_section.source_range.start)
-                    ret_val.append(ret_range)
-                    new_range = range(closest_section.source_range.start, current_range.stop)
-                    logger.info(f"Closest Section {closest_section}")
-                    logger.info(f"Adding dest range: {ret_range}, from {current_range}, with section {closest_section}. -> new_range: {new_range}")
-                    logger.info(f"Mapped {len(ret_range)} seeds, {len(new_range)} seeds left")
-                    current_range = new_range
-                else:
-                    ret_val.append(current_range)
-                    logger.info(f"Adding dest range: {current_range}, from {current_range}. Done with range.")
-                    logger.info(f"Mapped {len(current_range)} seeds, {0} seeds left")
-                    return ret_val
-            
-def get_num_seeds_in_ranges(map_ranges: List[range]) -> int:
-    """ Get the number of seeds in a range """
-    ret_val: int = 0
-    for map_range in map_ranges:
-        ret_val += len(map_range)
-    logger.info(f"{map_ranges} -> {ret_val} seeds")
-    return ret_val
 
 class Almanac:
+    """ An almanac representing seeds/seed ranges, and mappings between seed and location """
     def __init__(self, filename: str):
         self.filename: str = filename
         self.seeds: List[int] = []
@@ -111,10 +74,9 @@ class Almanac:
         self.last_map: str = None
         self.parse_input()
 
-    
     def parse_input(self) -> None:
         """ Parse the input """
-        with open(self.filename, "r") as file:
+        with open(self.filename, "r", encoding="utf-8") as file:
             for line in file:
                 line = line.strip()
                 if "seeds" in line:
@@ -126,9 +88,9 @@ class Almanac:
 
     def create_map(self, line: str) -> None:
         """ Add a line to the map """
-        map = line.strip(" map:")
-        self.maps[map] = Map()
-        self.last_map = map
+        mapping = line.strip(" map:")
+        self.maps[mapping] = Map()
+        self.last_map = mapping
 
     def add_to_map(self, line: str) -> None:
         """ Add a line to the map """
@@ -150,75 +112,63 @@ class Almanac:
         return location
 
     def map_seeds(self) -> Dict[int, int]:
-        """ Map seeds to maps """
+        """ Map seeds to locations """
         ret_val: Dict[int, int] = {}
         for seed in self.seeds:
             location: int = self.map_seed(seed)
             ret_val[seed] = location
 
         return ret_val
-    
-    def map_seed_range(self, map_range: range) -> List[range]:
-        """ Map a range of seeds """
-        ret_val: List[range] = []
-        for seed in map_range:
-            location: int = self.map_seed(seed)
-            ret_val.append(range(location, location + 1))
-        return ret_val
-    
 
-    
-    def map_range(self, seed_range: range) -> List[range]:
-        """ Map a range of seeds """
-        starting_seeds = get_num_seeds_in_ranges([seed_range])
-        ret_val: List[range] = [seed_range]
-        logger.info(f"Mapping seed-to-soil: {ret_val}")
-        ret_val = self.maps["seed-to-soil"].get_destination_ranges_from_ranges(ret_val)
-        logger.info(f"Mapping soil-to-fertilizer: {ret_val}")
-        ret_val = self.maps["soil-to-fertilizer"].get_destination_ranges_from_ranges(ret_val)
-        logger.info(f"Mapping fertilizer-to-water: {ret_val}")
-        ret_val = self.maps["fertilizer-to-water"].get_destination_ranges_from_ranges(ret_val)
-        logger.info(f"Mapping water-to-light: {ret_val}")
-        ret_val = self.maps["water-to-light"].get_destination_ranges_from_ranges(ret_val)
-        logger.info(f"Mapping light-to-temperature: {ret_val}")
-        ret_val = self.maps["light-to-temperature"].get_destination_ranges_from_ranges(ret_val)
-        logger.info(f"Mapping temperature-to-humidity: {ret_val}")
-        ret_val = self.maps["temperature-to-humidity"].get_destination_ranges_from_ranges(ret_val)
-        logger.info(f"Mapping humidity-to-location: {ret_val}")
-        ret_val = self.maps["humidity-to-location"].get_destination_ranges_from_ranges(ret_val)
+    def map_seeds_ranges(self) -> int:
+        """ Map seeds to locations using seed input as ranges instead of individual seeds """
+        next_intervals: List[Interval] = \
+            [Interval(self.seeds[i], self.seeds[i] + self.seeds[i + 1] - 1)
+             for i in range(0, len(self.seeds), 2)]
+        intervals = []
+        for plant_map in self.maps.values():
+            intervals.extend(next_intervals)
+            next_intervals = []
+            for section in plant_map.sections:
+                section_interval = IntervalSection(section)
+                remaining_intervals: List[Interval] = []
+                while intervals:
+                    interval = intervals.pop(0)
+                    next_interval, remaining = get_overlapped_interval(interval, section_interval)
+                    if next_interval:
+                        next_intervals.append(next_interval)
+                    remaining_intervals.extend(remaining)
+                intervals = remaining_intervals
 
-        ending_seeds = get_num_seeds_in_ranges(ret_val)
-        assert starting_seeds == ending_seeds
-        return ret_val
-    
-    def map_all_seeds(self) -> Dict[int, int]:
-        """ Map seeds to maps """
-        ret_val: Dict[int, int] = {}
-        seed_ranges = [range(self.seeds[i], self.seeds[i] + self.seeds[i + 1]) for i in range(0, len(self.seeds), 2)]
-        for seed_range in seed_ranges:
-            logger.info(f"Seed Range: {seed_range}")
-            for seed in seed_range:
-                location: int = self.map_seed(seed)
-                ret_val[seed] = location
+        intervals.extend(next_intervals)
+        return min([i.start for i in intervals])
 
-        return ret_val
-    
-    def map_all_ranges(self) -> List[range]:
-        """ Map seeds to locations using ranges """
-        ret_val: List[range] = []
-        seed_ranges = [range(self.seeds[i], self.seeds[i] + self.seeds[i + 1]) for i in range(0, len(self.seeds), 2)]
-        for seed_range in seed_ranges:
-            logger.info(f"Seed Range: {seed_range}")
-            ret_val.extend(self.map_range(seed_range))
+def get_overlapped_interval(source: Interval, mapping: IntervalSection) \
+    -> (Optional[Interval], List[Interval]):
+    """
+    Given an interval, and a mapping, return a discrete interval,
+    and any intervals that aren't mapped.
 
-        return ret_val
+    This can only ever return zero or one mapped interval, and zero to two remaining intervals.
 
-def test_map_ranges():
-    """ Test mapping ranges """
-    logger.info("")
-    almanac = Almanac(WORKING_DIR + "input_sample.txt")
-    locations = almanac.map_range(range(79, 93))
-
+    :param source: The source interval
+    :param mapping: The interval mapping
+    :return:
+    """
+    overlap_min = max(source.start, mapping.source_range.start)
+    overlap_max = min(source.stop, mapping.source_range.stop)
+    remaining = []
+    if overlap_min <= overlap_max:
+        # There is an overlap between source interval and mapping interval
+        if source.start < overlap_min:
+            remaining.append(Interval(source.start, overlap_min - 1))
+        if source.stop > overlap_max:
+            remaining.append(Interval(overlap_max + 1, source.stop))
+        mapped_interval = Interval(
+            overlap_min + mapping.destination_range.start - mapping.source_range.start,
+            overlap_max + mapping.destination_range.start - mapping.source_range.start)
+        return mapped_interval, remaining
+    return None, [source]
 
 
 def test_sanity():
@@ -250,19 +200,12 @@ def test_sample_2():
     """Test part 2"""
     logger.info("")
     almanac = Almanac(WORKING_DIR + "input_sample.txt")
-    locations = almanac.map_all_seeds().values()
-    assert min(locations) == 46
-    locations = almanac.map_all_ranges()
-    logger.info(locations)
-    min_locations = [min(location) for location in locations]
-    assert (min(min_locations)) == 46
-    
+    result = almanac.map_seeds_ranges()
+    logger.info(result)
 
 def test_part_2():
     """Test part 2"""
     logger.info("")
     almanac = Almanac(WORKING_DIR + "input.txt")
-    locations = almanac.map_all_ranges()
-    logger.info(locations)
-    min_locations = [location.start for location in locations]
-    logger.info(min(min_locations))
+    result = almanac.map_seeds_ranges()
+    assert result == 79004094
