@@ -1,6 +1,7 @@
 """ Advent of Code 2023 Day 05 """
 from typing import Dict, List, Self
 from dataclasses import dataclass
+import pytest
 
 from pymccool.logging import Logger, LoggerKwargs
 
@@ -76,7 +77,7 @@ class Hand:
         logger.debug(f"Secondary Score: {secondary_score}")
         self.secondary_score = secondary_score
         return self.secondary_score
-
+    
     
     def get_primary_score_number(self) -> int:
         """ Score the hand """
@@ -109,7 +110,7 @@ class Hand:
         # Check for 4 of a kind
         if 4 in a.values():
             self.type = "4oaK"
-            if jokers == 1:
+            if jokers > 0:
                 self.type = "5oaK"
             self.score += TYPES[self.type]
             return TYPES[self.type]
@@ -126,7 +127,7 @@ class Hand:
         if 3 in a.values():
             self.type = "3oaK"
             if jokers == 3:
-                self.type = "5oaK"
+                self.type = "4oaK"
             if jokers == 1:
                 self.type = "4oaK"
             self.primary_score = TYPES[self.type]
@@ -196,6 +197,33 @@ def test_score():
     assert (Hand(cards=[Card(label="A"), Card(label="Q"), Card(label="A"), Card(label="Q"), Card(label="A")], bid=1).score <
             Hand(cards=[Card(label="2"), Card(label="2"), Card(label="2"), Card(label="2"), Card(label="7")], bid=1).score)
     
+def do_hand_test(card_str: str, expected_type: str):
+    """ Test a hand """
+    hand = Hand(cards=[Card(label=label) for label in card_str], bid=1)
+    logger.info(f"Expect Hand: {hand} is {expected_type}")
+    assert hand.type == expected_type
+    
+def test_joker_types():
+    """ Test hand types with joker rules """
+    logger.info("")
+    do_hand_test("23456", "HC")
+    do_hand_test("J3456", "1P")
+    do_hand_test("JJ456", "3oaK")
+    do_hand_test("JJJ56", "4oaK")
+    do_hand_test("JJJJ6", "5oaK")
+    do_hand_test("JJJJJ", "5oaK")
+    do_hand_test("23455", "1P")
+    do_hand_test("J3455", "3oaK")
+    do_hand_test("JJ455", "4oaK")
+    do_hand_test("JJJ55", "5oaK")
+    do_hand_test("23344", "2P")
+    do_hand_test("J3344", "FH")
+    do_hand_test("2JJ44", "4oaK")
+    do_hand_test("42333", "3oaK")
+    do_hand_test("J2333", "4oaK")
+    do_hand_test("JJ333", "5oaK")
+    do_hand_test("42JJJ", "4oaK")
+    
 def test_hand():
     """ Test Hand """
     h1cards = "46646"
@@ -206,6 +234,7 @@ def test_hand():
     assert hand1 > hand2
     assert hand1.score > hand2.score
 
+@pytest.mark.skip("Uses wrong rules")
 def test_sample_1():
     """ Test Sample 1"""
     logger.info("")
@@ -272,7 +301,9 @@ def test_part_2():
     sorted_hands = sorted(hands.hands, key=lambda x: x.score, reverse=False)
     for rank, hand in enumerate(sorted_hands):
         winnings += hand.bid * (rank + 1)
-        logger.info(f"Sorted Hand: {hand}, Rank: {rank + 1}, Total Winnings: {winnings:,}")
+        #logger.info(f"Sorted Hand: {hand}, Rank: {rank + 1}, Total Winnings: {winnings:,}")
+        if "J" in [card.label for card in hand.cards]:
+            logger.info(f"Sorted Hand: {hand}")
         try:
             assert sorted_hands[rank] < sorted_hands[rank + 1], f"Hand {sorted_hands[rank]} is not less than {sorted_hands[rank + 1]}"
         except IndexError:
@@ -280,3 +311,4 @@ def test_part_2():
         except AssertionError as e:
             logger.error(e)
     logger.info(f"Winnings: {winnings}")
+    
