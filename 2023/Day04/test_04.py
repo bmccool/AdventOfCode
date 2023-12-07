@@ -25,7 +25,7 @@ class ScratchCard:
     def __repr__(self) -> str:
         return f"ScratchCard(id={self.id}, numbers={self.numbers}, "\
             "winning_numbers={self.winning_numbers}, score={self.score})"
-    
+
     def increase_score(self) -> None:
         """ Increase the score """
         if self.score == 0:
@@ -48,7 +48,7 @@ class ScratchCard:
             int(x) for x in self.input.split(":")[1].split("|")[1].strip().split()]
 
 class ScratchCards:
-    """ A set of scratch cards """
+    """ A dictionary of scratch cards """
     def __init__(self, infile: str):
         self.infile = infile
         self.cards: Dict[int, ScratchCard] = {}

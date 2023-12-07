@@ -1,0 +1,231 @@
+""" Advent of Code 2023 Day 05 """
+from typing import Dict, List, Self
+from dataclasses import dataclass
+
+from pymccool.logging import Logger, LoggerKwargs
+
+logger = Logger(LoggerKwargs(
+    app_name="AOC2023",
+))
+
+WORKING_DIR = '2023/Day07/'
+
+
+CARDS = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J",  "Q", "K", "A"]
+
+@dataclass
+class Card:
+    """ A card has a label and a value """
+    label: str
+    value: int = 0
+
+    def __post_init__(self) -> None:
+        self.label = self.label.upper()
+        self.value = CARDS.index(self.label) + 2
+
+    def __str__(self) -> str:
+        return f"{self.label}"
+
+@dataclass
+class Hand:
+    """ A hand consists of five cards and a bid """
+    cards: List[Card]
+    bid: int
+    score: int = 0
+    type: str = ""
+    primary_score = 0
+    secondary_score = 0
+
+    def __str__(self) -> str:
+        return f"{"".join([card.label for card in self.cards])}, ({self.type}: {self.score:_}), Bid: {self.bid}"
+    
+    def __repr__(self) -> str:
+        return f"{self.__str__()}"
+    
+    def __post_init__(self) -> None:
+        self.primary_score = self.get_primary_score()
+        self.secondary_score = self.get_secondary_score()
+        logger.debug(f"Hand: {self.__str__()} Type: {self.type}, Score: {self.score}, Primary Score: {self.primary_score}, Secondary Score: {self.secondary_score}")
+
+    def __lt__(self, other: Self) -> bool:
+        if self.primary_score < other.primary_score:
+            return True
+        logger.debug(f"Tiebreak check for {self} and {other}")
+        for card_i in range(5):
+            if self.cards[card_i].value < other.cards[card_i].value:
+                return True
+        return False
+    
+    def __le__(self, other: Self) -> bool:
+        if self.primary_score < other.primary_score:
+            return True
+        logger.debug(f"Tiebreak check for {self} and {other}")
+        for card_i in range(5):
+            if self.cards[card_i].value <= other.cards[card_i].value:
+                return True
+        return False
+
+    def get_secondary_score(self) -> int:
+        """ Get the tiebreaker score"""
+        # Must be < 1000, the resolution of the primary score
+        # Score each card and give weight to first cards
+        secondary_score = 0
+        for i, card in enumerate(self.cards):
+            weight = ((len(self.cards) - i)) ** 4
+            secondary_score += (card.value * weight)
+            logger.debug(f"Card: {card.label}, Value: {card.value}, Weight: {weight}, Weighted Value {card.value * weight}")
+        logger.debug(f"Secondary Score: {secondary_score}")
+        self.score += secondary_score
+        return secondary_score
+    
+    def get_primary_score(self) -> int:
+        """ Score the hand """
+        TYPES = {"5oaK": 600000,
+                 "4oaK": 500000, 
+                 "FH": 400000, 
+                 "3oaK": 300000, 
+                 "2P": 200000, 
+                 "1P": 100000, 
+                 "HC": 0}
+        
+        # Put the hand in a dict for easy counting
+        a = {}
+        for card in self.cards:
+            if card.label not in a:
+                a[card.label] = 0
+            a[card.label] += 1
+
+        # Check for 5 of a kind
+        if 5 in a.values():
+            self.type = "5oaK"
+            self.score += TYPES[self.type]
+            return TYPES[self.type]
+        
+        # Check for 4 of a kind
+        if 4 in a.values():
+            self.type = "4oaK"
+            self.score += TYPES[self.type]
+            return TYPES[self.type]
+        
+        # check for Full House
+        if len(set([card.label for card in self.cards])) == 2:
+            self.type = "FH"
+            self.score += TYPES[self.type]
+            return TYPES[self.type]
+        
+        # Check for 3 of a kind
+        if 3 in a.values():
+            self.type = "3oaK"
+            self.score += TYPES[self.type]
+            return TYPES[self.type]
+        
+        # Check for 2 pairs
+        if len(a) == 3:
+            self.type = "2P"
+            self.score += TYPES[self.type]
+            return TYPES[self.type]
+        
+        # Check for 1 pair
+        if len(a) == 4:
+            self.type = "1P"
+            self.score += TYPES[self.type]
+            return TYPES[self.type]
+        
+        # High Card
+        if not self.type:
+            self.type = "HC"
+            self.score += TYPES[self.type]
+            return TYPES[self.type]
+
+
+
+
+
+
+class Hands:
+    """ Class for parsing Camel Cards Hands """
+    def __init__(self, filename: str):
+        self.filename = filename
+        self.hands: List[Hand] = []
+        self.parse()
+    
+    def parse(self) -> None:
+        """ Parse the input file """
+        with open(self.filename, 'r') as file:
+            for line in file:
+                line = line.strip()
+                parts = line.split()
+                self.hands.append(Hand(cards=[Card(label=label) for label in parts[0]], bid=int(parts[-1])))
+
+    def __repr__(self) -> str:
+        return f"{self.hands}"
+    
+    def __str__(self) -> str:
+        return f"{self.hands}"
+
+def test_sanity():
+    """Sanity check """
+    assert True
+
+def test_score():
+    """ Test scoring """
+    logger.info("")
+    assert Hand(cards=[Card(label="A"), Card(label="A"), Card(label="A"), Card(label="A"), Card(label="A")], bid=1).score == 613706
+    assert (Hand(cards=[Card(label="A"), Card(label="Q"), Card(label="A"), Card(label="Q"), Card(label="A")], bid=1).score <
+            Hand(cards=[Card(label="2"), Card(label="2"), Card(label="2"), Card(label="2"), Card(label="7")], bid=1).score)
+    
+def test_hand():
+    """ Test Hand """
+    cards_labels = "3344T"
+    hand = Hand(cards=[Card(label=label) for label in cards_labels], bid=1)
+    logger.info(hand)
+
+def test_sample_1():
+    """ Test Sample 1"""
+    logger.info("")
+    hands = Hands(WORKING_DIR + 'input_sample.txt')
+    winnings = 0
+    sorted_hands = sorted(hands.hands, key=lambda x: x.score, reverse=False)
+    #sorted_hands = sorted(hands.hands, reverse=False)
+    for rank, hand in enumerate(sorted_hands):
+        winnings += hand.bid * (rank + 1)
+        logger.info(f"Sorted Hand: {hand}, Rank: {rank + 1}, Total Winnings: {winnings:,}")
+        try:
+            assert sorted_hands[rank] < sorted_hands[rank + 1], f"Hand {sorted_hands[rank]} is not less than {sorted_hands[rank + 1]}"
+        except IndexError:
+            logger.info("No card to compare to")
+        except AssertionError as e:
+            logger.error(e)
+    logger.info(f"Winnings: {winnings}")
+
+
+
+def test_part_1():
+    """Test part 1"""
+    hands = Hands(WORKING_DIR + 'input.txt')
+    logger.info("")
+    #for hand in hands.hands:
+        #logger.info(f"Hand: {hand}")
+
+    winnings = 0
+    sorted_hands = sorted(hands.hands, key=lambda x: x.score, reverse=False)
+    for rank, hand in enumerate(sorted_hands):
+        winnings += hand.bid * (rank + 1)
+        logger.info(f"Sorted Hand: {hand}, Rank: {rank + 1}, Total Winnings: {winnings:,}")
+        try:
+            assert sorted_hands[rank] < sorted_hands[rank + 1], f"Hand {sorted_hands[rank]} is not less than {sorted_hands[rank + 1]}"
+        except IndexError:
+            logger.info("No card to compare to")
+        except AssertionError as e:
+            logger.error(e)
+    logger.info(f"Winnings: {winnings}")
+    #assert winnings != 253983146
+
+def test_sample_2():
+    """Test part 2"""
+    logger.info("")
+    
+
+def test_part_2():
+    """Test part 2"""
+    logger.info("")
