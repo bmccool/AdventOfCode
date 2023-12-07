@@ -11,7 +11,7 @@ logger = Logger(LoggerKwargs(
 WORKING_DIR = '2023/Day07/'
 
 
-CARDS = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J",  "Q", "K", "A"]
+CARDS = ["J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"]
 
 @dataclass
 class Card:
@@ -46,26 +46,20 @@ class Hand:
         self.primary_score = self.get_primary_score_number()
         self.secondary_score = self.get_secondary_score_number()
         self.score = int(hex(self.primary_score) + hex(self.secondary_score).strip("0x"), 16)
-        logger.info(f"Hand: {self.__str__()} Type: {self.type}, Score: {self.score}, Primary Score: {self.primary_score}, Secondary Score: {self.secondary_score}")
+        #logger.info(f"Hand: {self.__str__()} Type: {self.type}, Score: {self.score}, Primary Score: {self.primary_score}, Secondary Score: {self.secondary_score}")
 
     def __lt__(self, other: Self) -> bool:
-        logger.info(f"Comparing {self} and {other}")
         if self.primary_score < other.primary_score:
             return True
         logger.debug(f"Tiebreak check for {self} and {other}")
         for card_i in range(5):
-            logger.info(f"Is {self.cards[card_i]} less than {other.cards[card_i]}?")
             if self.cards[card_i].value < other.cards[card_i].value:
-                logger.info("YES")
-                logger.info(f"Card {self.cards[card_i]} is less than {other.cards[card_i]}")
                 return True
             elif self.cards[card_i].value > other.cards[card_i].value:
-                logger.info("NO")
                 return False
         return False
     
     def __le__(self, other: Self) -> bool:
-        logger.info(f"Comparing {self} and {other}")
         if self.primary_score < other.primary_score:
             return True
         logger.debug(f"Tiebreak check for {self} and {other}")
@@ -79,9 +73,10 @@ class Hand:
         # Must be < 1000, the resolution of the primary score
         # Score each card and give weight to first cards
         secondary_score = int("0x" + "".join([hex(card.value).strip("0x") for card in self.cards]), 16)
-        logger.info(f"Secondary Score: {secondary_score}")
+        logger.debug(f"Secondary Score: {secondary_score}")
         self.secondary_score = secondary_score
         return self.secondary_score
+
     
     def get_primary_score_number(self) -> int:
         """ Score the hand """
@@ -100,6 +95,11 @@ class Hand:
                 a[card.label] = 0
             a[card.label] += 1
 
+        # Are there any jokers?
+        jokers = len([card for card in self.cards if card.label == "J"])
+        #logger.info(f"{jokers} Jokers in {self}")
+
+
         # Check for 5 of a kind
         if 5 in a.values():
             self.type = "5oaK"
@@ -109,36 +109,54 @@ class Hand:
         # Check for 4 of a kind
         if 4 in a.values():
             self.type = "4oaK"
+            if jokers == 1:
+                self.type = "5oaK"
             self.score += TYPES[self.type]
             return TYPES[self.type]
         
         # check for Full House
         if len(set([card.label for card in self.cards])) == 2:
             self.type = "FH"
+            if 0 < jokers:
+                self.type = "5oaK"
             self.primary_score = TYPES[self.type]
             return TYPES[self.type]
         
         # Check for 3 of a kind
         if 3 in a.values():
             self.type = "3oaK"
+            if jokers == 3:
+                self.type = "5oaK"
+            if jokers == 1:
+                self.type = "4oaK"
             self.primary_score = TYPES[self.type]
             return TYPES[self.type]
         
         # Check for 2 pairs
         if len(a) == 3:
             self.type = "2P"
+            if jokers == 2:
+                self.type = "4oaK"
+            if jokers == 1:
+                self.type = "FH"
             self.primary_score = TYPES[self.type]
             return TYPES[self.type]
         
         # Check for 1 pair
         if len(a) == 4:
             self.type = "1P"
+            if jokers == 2:
+                self.type = "3oaK"
+            if jokers == 1:
+                self.type = "3oaK"
             self.primary_score = TYPES[self.type]
             return TYPES[self.type]
         
         # High Card
         if not self.type:
             self.type = "HC"
+            if jokers == 1:
+                self.type = "1P"
             self.primary_score = TYPES[self.type]
             return TYPES[self.type]
 
@@ -211,8 +229,8 @@ def test_sample_1():
 
 def test_part_1():
     """Test part 1"""
-    hands = Hands(WORKING_DIR + 'input.txt')
     logger.info("")
+    hands = Hands(WORKING_DIR + 'input.txt')
     winnings = 0
     sorted_hands = sorted(hands.hands, key=lambda x: x.score, reverse=False)
     #sorted_hands = sorted(hands.hands, reverse=False)
@@ -230,8 +248,35 @@ def test_part_1():
 def test_sample_2():
     """Test part 2"""
     logger.info("")
+    hands = Hands(WORKING_DIR + 'input_sample.txt')
+    winnings = 0
+    sorted_hands = sorted(hands.hands, key=lambda x: x.score, reverse=False)
+    for rank, hand in enumerate(sorted_hands):
+        winnings += hand.bid * (rank + 1)
+        logger.info(f"Sorted Hand: {hand}, Rank: {rank + 1}, Total Winnings: {winnings:,}")
+        try:
+            assert sorted_hands[rank] < sorted_hands[rank + 1], f"Hand {sorted_hands[rank]} is not less than {sorted_hands[rank + 1]}"
+        except IndexError:
+            logger.info("No card to compare to")
+        except AssertionError as e:
+            logger.error(e)
+    logger.info(f"Winnings: {winnings}")
+    assert winnings == 5905
     
 
 def test_part_2():
     """Test part 2"""
     logger.info("")
+    hands = Hands(WORKING_DIR + 'input.txt')
+    winnings = 0
+    sorted_hands = sorted(hands.hands, key=lambda x: x.score, reverse=False)
+    for rank, hand in enumerate(sorted_hands):
+        winnings += hand.bid * (rank + 1)
+        logger.info(f"Sorted Hand: {hand}, Rank: {rank + 1}, Total Winnings: {winnings:,}")
+        try:
+            assert sorted_hands[rank] < sorted_hands[rank + 1], f"Hand {sorted_hands[rank]} is not less than {sorted_hands[rank + 1]}"
+        except IndexError:
+            logger.info("No card to compare to")
+        except AssertionError as e:
+            logger.error(e)
+    logger.info(f"Winnings: {winnings}")
