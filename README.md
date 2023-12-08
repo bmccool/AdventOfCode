@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/bmccool/AdventOfCode/graph/badge.svg?token=DY1GXUYL6N)](https://codecov.io/gh/bmccool/AdventOfCode)
+
 <!--- advent_readme_stars table --->
 ## 2023 Results
 
