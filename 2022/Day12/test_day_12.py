@@ -1,8 +1,5 @@
 from __future__ import annotations
-from collections import deque
-from typing import List, Callable
-import random
-import pytest
+from typing import Callable
 import math
 import copy
 from functools import partial
@@ -287,7 +284,6 @@ def test_part_1():
     print(_map.start.height)
     print(_map.end.height)
 
-    import time
     astar = AStar(_map.start, _map.end, _map.get_node, partial(get_neighbors, _map))
     while astar.step():
         continue
@@ -324,7 +320,6 @@ def test_part_2():
     print(_map.start.height)
     print(_map.end.height)
 
-    import time
     astar = AStar(_map.start, _map.end, _map.get_node, partial(get_neighbors, _map), True)
     while astar.step():
         continue

@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import Set
 
 
 
@@ -42,7 +42,6 @@ class SafetyGroup:
 
     def find_badge(self):
         """ Find the common item among all elves in this group """
-        badge = None
         for item in self.elves[0].contents:
             for elf in self.elves:
                 if item not in elf.contents:

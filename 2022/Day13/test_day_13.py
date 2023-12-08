@@ -1,14 +1,5 @@
 from __future__ import annotations
-from collections import deque
-from typing import List, Callable
-import random
-import pytest
-import math
-import copy
-from functools import partial
-
-from termcolor import colored
-#colored(tree.height, 'red')
+import functools
 
 
 class Day13Tester:
@@ -49,10 +40,9 @@ class Day13Tester:
         # And compare elementwise
         for i, e in enumerate(right):
             try:
-                new_left = left[i]
+                _new_left = left[i]
             except IndexError:
                 # Left ranout first!
-                #print(" - Success!")
                 return 1
 
             result = Day13Tester.compare(left[i], right[i])
@@ -68,10 +58,10 @@ class Day13Tester:
 
     def consume(self, line: str):
         if line != "":
-            if self.left == None:
+            if self.left is None:
                 self.left = line
 
-            elif self.right == None:
+            elif self.right is None:
                 self.right = line
 
         if self.left and self.right :
@@ -79,7 +69,7 @@ class Day13Tester:
             self.left = None
             self.right = None
 
-import functools
+
 #key=functools.cmp_to_key(compare)
 class Day13TesterPart2(Day13Tester):
     def __init__(self):

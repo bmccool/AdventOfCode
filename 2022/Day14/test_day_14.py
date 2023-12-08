@@ -1,13 +1,6 @@
 from __future__ import annotations
-from collections import deque
-from typing import List, Callable
-import random
 import pytest
-import math
-import copy
-from functools import partial
 
-from termcolor import colored
 #colored(tree.height, 'red')
 
 
@@ -60,11 +53,11 @@ class Pit:
         if not self.in_bounds(x,y):
             return False
         
-        if not (x, y+1) in self.objects:
+        if (x, y+1) not in self.objects:
             return self.add_sand(x, y+1)
-        elif not (x - 1, y + 1) in self.objects:
+        elif (x - 1, y + 1) not in self.objects:
             return self.add_sand(x - 1, y + 1)
-        elif not (x + 1, y + 1) in self.objects:
+        elif (x + 1, y + 1) not in self.objects:
             return self.add_sand(x + 1, y + 1)
 
         print(f"Sand insertion at {x}, {y}")
@@ -85,11 +78,11 @@ class Pit2(Pit):
         if not self.in_bounds(x,y):
             return False
         
-        if not (x, y+1) in self.objects:
+        if (x, y+1) not in self.objects:
             return self.add_sand(x, y+1)
-        elif not (x - 1, y + 1) in self.objects:
+        elif (x - 1, y + 1) not in self.objects:
             return self.add_sand(x - 1, y + 1)
-        elif not (x + 1, y + 1) in self.objects:
+        elif (x + 1, y + 1) not in self.objects:
             return self.add_sand(x + 1, y + 1)
 
         #print(f"Sand insertion at {x}, {y}")
@@ -101,7 +94,7 @@ class Pit2(Pit):
 
     def update_floor(self):
         for x in range(self.x_min - 2, self.x_max + 1+ 2):
-            if not (x,self.y_max) in self.objects:
+            if (x,self.y_max) not in self.objects:
                 self.objects[(x,self.y_max)] = "#"
                 
 

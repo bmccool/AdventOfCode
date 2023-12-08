@@ -1,5 +1,3 @@
-from typing import Tuple
-from collections import deque 
 from termcolor import colored
 
 """ Implement a class Tree with a list "self.visible" which contains "FROM_LEFT, "FROM_UP", etc. """
@@ -68,13 +66,13 @@ class Forest:
                 print(colored(tree.height, 'red'), end="")
             else:
                 print(tree.height, end="")
-            if tree.right == None:
+            if tree.right is None:
                 print("")
-                if tree.down == None:
+                if tree.down is None:
                     return
                 else:
                     tree = tree.down
-                    while(tree.left):
+                    while tree.left:
                         tree = tree.left
             else:
                 tree = tree.right
@@ -185,7 +183,8 @@ class Forest:
             left_score += 1
             if tree.left.height < base.height:
                 tree = tree.left
-            else: break
+            else:
+                break
 
         tree = base
         right_score = 0
@@ -193,7 +192,8 @@ class Forest:
             right_score += 1
             if tree.right.height < base.height:
                 tree = tree.right
-            else: break
+            else:
+                break
 
         tree = base
         up_score = 0
@@ -201,7 +201,8 @@ class Forest:
             up_score += 1
             if tree.up.height < base.height:
                 tree = tree.up
-            else: break
+            else:
+                break
 
         tree = base
         down_score = 0
@@ -209,7 +210,8 @@ class Forest:
             down_score += 1
             if tree.down.height < base.height:
                 tree = tree.down
-            else: break            
+            else:
+                break
 
 
         return (up_score * down_score * left_score * right_score)

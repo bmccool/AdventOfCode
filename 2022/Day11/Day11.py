@@ -1,11 +1,8 @@
 from __future__ import annotations
-from typing import Tuple
 from collections import deque
 from typing import List, Callable
 import time
-from termcolor import colored
 
-import pdb
 
 
 
@@ -20,19 +17,19 @@ class Item:
     def __add__(self, other):
         try:
             return self.worry_level + other.worry_level
-        except:
+        except AttributeError:
             return self.worry_level + other
 
     def __sub__(self, other: Item):
         try:
             return self.worry_level - other.worry_level
-        except:
+        except AttributeError:
             return self.worry_level - other
 
     def __mul__(self, other: Item):
         try:
             return self.worry_level * other.worry_level
-        except:
+        except AttributeError:
             return self.worry_level * other
 
 class Monkey:

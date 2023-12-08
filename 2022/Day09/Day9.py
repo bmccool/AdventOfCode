@@ -1,6 +1,3 @@
-from typing import Tuple
-from collections import deque 
-from termcolor import colored
 
 class Ropes:
     def __init__(self, num_knots):

@@ -66,7 +66,7 @@ class Field:
         self.beacon_locations = set()
 
     def add_sensor(self, sensor: Sensor):
-        if self.x_min == None:
+        if self.x_min is None:
             self.x_min = sensor.x
             self.y_min = sensor.y
             self.x_max = sensor.x
@@ -112,11 +112,11 @@ class Field:
 
         print(ranges)
 
-        #for i, e in enumerate(line_set):
-        #    print(f"{i + 1}: {e}")
+        for i, e in enumerate(line_set):
+            logger.verbose(f"{i + 1}: {e}")
 
-        #for i, e in enumerate(self.beacon_locations):
-        #    print(f"{i + 1}: {e}")
+        for i, e in enumerate(self.beacon_locations):
+            logger.verbose(f"{i + 1}: {e}")
 
         sum = 0
         for r in ranges:

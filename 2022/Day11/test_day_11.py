@@ -1,8 +1,6 @@
 from Day11.Day11 import Monkey, Item, round, calculate_monkey_business, set_big_mod
 from collections import deque
-from typing import List
 import random
-import pytest
 
 def test_day_11_part_1():
 
