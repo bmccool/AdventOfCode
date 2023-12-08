@@ -142,9 +142,6 @@ class CamelGuidanceSystem:
             direction_index += 1
             steps_taken += 1
             direction_index = direction_index % len(self.directions)
-
-            if current_location == "ZZZ":
-                return -1
             
             if current_location[-1] == "Z":
                 if potential_loop_point:
