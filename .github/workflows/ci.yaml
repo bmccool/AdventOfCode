@@ -36,12 +36,21 @@ jobs:
           pip install -r requirements.txt
       # Run the tests
       - name: Run Tests
-        run: pytest --cov . # Coverage measured relative to --cov argument
+        run: pytest --cov . --junitxml=report.xml # Coverage measured relative to --cov argument
+      # Add Test Report
+      - name: Add Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: PyTest Results
+          path: report.xml
+          reporter: java-junit
       # Upload coverage reports to Codecov
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
       # Lint with Ruff
       - name: Lint with Ruff
         uses: chartboost/ruff-action@v1
