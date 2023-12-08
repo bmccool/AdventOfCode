@@ -2,45 +2,45 @@ name: Run Tests
 
 # Run on a push to ANY branch, or a PR to main
 on:
-    push:
-    pull_request:
-        branches:
-            - "main"
+  push:
+  pull_request:
+    branches:
+      - "main"
 
 jobs:
-    test:
-        # For this repo, we only need to test on the latest version of Ubuntu
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                python-version: ["3.12"]
-                os: [ubuntu-latest]
+  test:
+    # For this repo, we only need to test on the latest version of Ubuntu
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+        os: [ubuntu-latest]
 
-        steps:
-            # Checkout the latest code from the repo
-            - name: Checkout Repo
-                uses: actions/checkout@v4
-            # Setup which version of Python to use
-            - name: Set Up Python ${{ matrix.python-version }}
-                uses: actions/setup-python@v5
-                with:
-                    python-version: ${{ matrix.python-version }}
-            # Display the Python version being used
-            - name: Display Python Version
-                run: python -c "import sys; print(sys.version)"
-            # Install Pytest and Coverage
-            - name: Install Test Dependencies
-                run: |
-                    python -m pip install --upgrade pip
-                    pip install pytest pytest-cov
-            # Run the tests
-            - name: Run Tests
-                run: pytest --cov . # Coverage measured relative to --cov argument
-            # Upload coverage reports to Codecov
-            - name: Upload coverage reports to Codecov
-                uses: codecov/codecov-action@v3
-                env:
-                    CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-            # Lint with Ruff
-            - name: Lint with Ruff
-                uses: chartboost/ruff-action@v1
+    steps:
+      # Checkout the latest code from the repo
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      # Setup which version of Python to use
+      - name: Set Up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # Display the Python version being used
+      - name: Display Python Version
+        run: python -c "import sys; print(sys.version)"
+      # Install Pytest and Coverage
+      - name: Install Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+      # Run the tests
+      - name: Run Tests
+        run: pytest --cov . # Coverage measured relative to --cov argument
+      # Upload coverage reports to Codecov
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      # Lint with Ruff
+      - name: Lint with Ruff
+        uses: chartboost/ruff-action@v1
