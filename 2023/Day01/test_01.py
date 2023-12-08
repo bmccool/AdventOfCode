@@ -1,7 +1,6 @@
 """ Advent of Code 2023 Day 01 """
 from dataclasses import dataclass
 from typing import List
-from rich import print # pylint: disable=redefined-builtin
 
 from pymccool.logging import Logger, LoggerKwargs
 

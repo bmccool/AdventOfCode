@@ -1,14 +1,6 @@
 from __future__ import annotations
-from collections import deque
-from typing import List, Callable
-import random
 import pytest
-import math
-import copy
-from functools import partial
 
-from termcolor import colored
-#colored(tree.height, 'red')
 
 class ElfEncryptorElement:
     def __init__(self, value, position=None):

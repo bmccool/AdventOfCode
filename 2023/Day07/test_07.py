@@ -1,7 +1,6 @@
 """ Advent of Code 2023 Day 05 """
-from typing import Dict, List, Self
+from typing import List, Self
 from dataclasses import dataclass
-import pytest
 
 from pymccool.logging import Logger, LoggerKwargs
 

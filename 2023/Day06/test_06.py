@@ -1,5 +1,5 @@
 """ Advent of Code 2023 Day 05 """
-from typing import Dict, List
+from typing import List
 from dataclasses import dataclass
 
 from pymccool.logging import Logger, LoggerKwargs

@@ -31,7 +31,7 @@ heaviest_elf = Elf()
 this_elf = Elf()
 with open("Day1Data.txt", "r") as datafile:
     for line in datafile:
-        if line.strip() is not "":
+        if line.strip():
             this_elf.add(int(line))
         else: # Empty line, do elf comparisons
             keep_heaviest_elves(elf_list, this_elf, 3)

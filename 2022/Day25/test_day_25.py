@@ -1,14 +1,4 @@
 from __future__ import annotations
-from collections import deque
-from typing import List, Callable
-import random
-import pytest
-import math
-import copy
-from functools import partial
-
-from termcolor import colored
-#colored(tree.height, 'red')
 
 def snafuint(snafu_digit: str) -> int:
     match snafu_digit:
@@ -53,7 +43,6 @@ def biggest_at_digit(digit: int) -> int:
 def dec2snafu(number) -> str:
     snafu = ""
     represented = 0
-    place = 1
     digits = 1
     while True:
         if biggest_at_digit(digits) >= number:

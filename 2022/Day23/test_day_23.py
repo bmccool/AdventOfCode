@@ -1,8 +1,6 @@
 from __future__ import annotations
-
+from typing import Callable
 from pymccool.logging import Logger, LoggerKwargs
-from pymccool.tracing import get_tracer, get_decorator
-
 
 logger = Logger(LoggerKwargs(
     app_name="Day23",
@@ -45,7 +43,7 @@ class Field:
                         if(((x-1, y-1) not in self.elves) and \
                            ((x,   y-1) not in self.elves) and \
                            ((x+1, y-1) not in self.elves)):
-                           if not proposed_coordinates:
+                            if not proposed_coordinates:
                                 proposed_coordinates = (x, y-1)
                                 proposed_direction = "N"
                         else:
@@ -54,7 +52,7 @@ class Field:
                         if(((x+1, y-1) not in self.elves) and \
                            ((x+1, y)   not in self.elves) and \
                            ((x+1, y+1) not in self.elves)):
-                           if not proposed_coordinates:
+                            if not proposed_coordinates:
                                 proposed_coordinates = (x+1, y)
                                 proposed_direction = "E"
                         else:
@@ -63,7 +61,7 @@ class Field:
                         if(((x-1, y+1) not in self.elves) and \
                            ((x,   y+1) not in self.elves) and \
                            ((x+1, y+1) not in self.elves)):
-                           if not proposed_coordinates:
+                            if not proposed_coordinates:
                                 proposed_coordinates = (x, y+1)
                                 proposed_direction = "S"
                         else:
@@ -72,15 +70,15 @@ class Field:
                         if(((x-1, y-1) not in self.elves) and \
                            ((x-1, y)   not in self.elves) and \
                            ((x-1, y+1) not in self.elves)):
-                           if not proposed_coordinates:
+                            if not proposed_coordinates:
                                 proposed_coordinates = (x-1, y)
-                                proposed_direction = "W"
+
                         else:
                             move = True
                     case _:
                         logger.info("SOMETHING WENT WRONG, THIS DIRECTION ISNT ON THE COMPASS")
 
-            #self.show_point(elf, proposed_direction, move)
+            self.show_point(elf, proposed_direction, move, log_command=logger.verbose)
             if move and proposed_coordinates:
                 try:
                     proposed_moves[(proposed_coordinates)].append(elf)
@@ -99,16 +97,16 @@ class Field:
                 self.place_elf(move[0])
                 elves_moved += 1
             else:
+                logger.verbose(f"Too many elves wanted to move to {move[0]}. ===== {move[1]}")
                 continue
-                logger.info(f"Too many elves wanted to move to {move[0]}. ===== {move[1]}")
 
         # Update thd compass
         self.compass.append(self.compass.pop(0))
         return elves_moved
     
-    def show_point(self, coordinates, direction=None, move=None):
-        
-        logger.info("SHOW POINT")
+    def show_point(self, coordinates, direction=None, move=None, log_command: Callable=logger.verbose):
+        """ Show the point and the surrounding 8 points """
+        log_command("SHOW POINT")
         x, y = coordinates
         line_no = 0
         line_to_print = ""
@@ -124,12 +122,12 @@ class Field:
                 line_to_print += f"   Move?: {move}"
             else:
                 line_to_print += f"   Direction: {direction}"
-            logger.info(line_to_print)
+            log_command(line_to_print)
             line_no += 1
 
     def place_elf(self, coordinates):
         # Deal with first input
-        if self.bottom == None:
+        if self.bottom is None:
             self.left = coordinates[0]
             self.right = coordinates[0]
             self.top = coordinates[0]
@@ -143,7 +141,6 @@ class Field:
         self.right = max(self.right, coordinates[0])
         self.top = min(self.top, coordinates[1])
         self.bottom = max(self.bottom, coordinates[1])
-        #logger.info(f"Inserted elf at ({coordinates}), LR, TB = {self.left}, {self.right}, {self.top}, {self.bottom}")
 
     def consume(self, line):
         for i, marker in enumerate(line):
