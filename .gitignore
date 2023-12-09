@@ -1,2 +1,6 @@
 *pycache*
 venv
+Logs/*
+.vscode/*
+report.xml
+*.crt
