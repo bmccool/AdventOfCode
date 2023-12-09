@@ -1,9 +1,5 @@
 """ Advent of Code 2023 Day 05 """
 from typing import List, Callable
-from dataclasses import dataclass
-from math import lcm
-import os
-import numpy as np
 
 from pymccool.logging import Logger, LoggerKwargs
 
@@ -14,22 +10,33 @@ logger = Logger(LoggerKwargs(
 WORKING_DIR = '2023/Day09/'
 
 class History:
+    """ A history of readings (or deltas between readings) and postdict/predict methods """
     def __init__(self, history: List[int]):
         self.history = history
 
-    def render_prediction(self, history: List[int], prediction: int, log_func: Callable=logger.info) -> None:
+    def render_prediction(self,
+                          history: List[int],
+                          prediction: int,
+                          log_func: Callable=logger.info) -> None:
         """ Render the prediction """
         spacing = len(max([str(h) for h in self.history], key=len)) + 1
         front_spacing = round(spacing / 2)
-        history_string = "".join([f"{h:{spacing}}" for h in history])
-        logger.info(f"{' ' * front_spacing * (len(self.history) - len(history))}{history_string}{prediction:{spacing}}")
+        history_string = f"{' ' * front_spacing * (len(self.history) - len(history))}"
+        history_string += "".join([f"{h:{spacing}}" for h in history])
+        history_string += f"{prediction:{spacing}}"
+        log_func(history_string)
 
-    def render_postdictions(self, history: List[int], postdiction: int, log_func: Callable=logger.info) -> None:
+    def render_postdictions(self,
+                            history: List[int],
+                            postdiction: int,
+                            log_func: Callable=logger.info) -> None:
         """ Render the postdiction """
         spacing = len(max([str(h) for h in self.history], key=len)) + 1
         front_spacing = round(spacing / 2)
-        history_string = "".join([f"{h:{spacing}}" for h in history])
-        logger.info(f"{' ' * front_spacing * (len(self.history) - len(history))}{postdiction:{spacing}}{history_string}")
+        history_string = f"{' ' * front_spacing * (len(self.history) - len(history))}"
+        history_string += f"{postdiction:{spacing}}"
+        history_string += "".join([f"{h:{spacing}}" for h in history])
+        log_func(history_string)
 
     def get_postdiction(self, history=None) -> int:
         """ Get the next postdiction from a history """
@@ -76,11 +83,10 @@ class OASIS:
     def get_predictions(self) -> List[int]:
         """ Get the a list of all predictions """
         return [h.get_prediction() for h in self.histories]
-    
+
     def get_postdictions(self) -> List[int]:
         """ Get the a list of all postdictions """
         return [h.get_postdiction() for h in self.histories]
-
 
 def test_sanity():
     """Sanity check """
@@ -92,8 +98,9 @@ def test_get_prediction():
     history = History([0, 3, 6, 9, 12, 15])
     assert history.get_prediction() == 18
 
-    history = History([9,      15,      18,      18,      15,       9])
+    history = History([9, 15, 18, 18, 15, 9])
     prediction = history.get_prediction()
+    assert prediction == 0
 
 def test_get_postdiction():
     """ Test get_postdiction """
