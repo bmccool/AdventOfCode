@@ -331,7 +331,9 @@ def test_sample_2():
     longest = sketch.walk_pipes(starting_pipes)
     sketch.render(show_complete=True)
     logger.info(f"Longest: {longest}")
+    sketch.replace_starting_pipe()
     locations = sketch.paint_pipes()
+    logger.info(f"Locations: {locations}")
     assert locations == 4
 
 def test_sample_3():
@@ -345,6 +347,7 @@ def test_sample_3():
     logger.info(f"Longest: {longest}")
     sketch.replace_starting_pipe()
     locations = sketch.paint_pipes()
+    logger.info(f"Locations: {locations}")
     assert locations == 8
 
 
