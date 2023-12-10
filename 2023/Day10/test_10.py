@@ -37,20 +37,25 @@ class Point:
 
     def __sub__(self, other) -> Self:
         return Point(self.x - other.x, self.y - other.y)
-    
+
     def up(self) -> Self:
+        """ Get the point directly above this one """
         return self + Point(0, -1)
-    
+
     def down(self) -> Self:
+        """ Get the point directly below this one """
         return self + Point(0, 1)
-    
+
     def left(self) -> Self:
+        """ Get the point directly left of this one """
         return self + Point(-1, 0)
-    
+
     def right(self) -> Self:
+        """ Get the point directly right of this one """
         return self + Point(1, 0)
 
 class Pipe():
+    """ A pipe, with a label and a point"""
     def __init__(self, label: str, point: Point):
         # Ugh use pattern matching lol
         if label == '|':
@@ -82,6 +87,7 @@ class Pipe():
 
 
 class Sketch:
+    """ Sketch of a 2D grid of pipes """
     def __init__(self, filename: str):
         self.filename: str = filename
         self.data: Dict[Point, Pipe] = {}
@@ -117,7 +123,7 @@ class Sketch:
                         if datapoint.distance is None:
                             datapoint = ' '
                     row += str(datapoint)
-            logger.info(row)
+            log_func(row)
 
     def get_starting_pipes(self) -> List[Pipe]:
         """ Get the starting pipes next to the S pipe """
@@ -251,7 +257,7 @@ class Sketch:
         """ Paint the pipes """
         # From top to bottom, left to right, Count pipes passed and paint odd numbered locations
         inside_locations = 0
-        
+
         for y in range(self.max.y + 1):
             inside = False
             inside_dir = None
