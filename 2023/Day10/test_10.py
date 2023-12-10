@@ -230,11 +230,63 @@ class Sketch:
                 pipes.append(next_pipe)
             
         return longest_distance
-    
+
+    def replace_starting_pipe(self) -> None:
+        """ Replace the starting pipe (S) with a normal pipe (used for painting purposes)"""
+        pipes_to_start = [pipe.prev for pipe in self.get_starting_pipes()]
+        if "down" in pipes_to_start and "up" in pipes_to_start:
+            self.data[self.start].label = '┃'
+        if "left" in pipes_to_start and "right" in pipes_to_start:
+            self.data[self.start].label = '━'
+        if "down" in pipes_to_start and "right" in pipes_to_start:
+            self.data[self.start].label = '┛'
+        if "down" in pipes_to_start and "left" in pipes_to_start:
+            self.data[self.start].label = '┗'
+        if "up" in pipes_to_start and "right" in pipes_to_start:
+            self.data[self.start].label = '┓'
+        if "up" in pipes_to_start and "left" in pipes_to_start:
+            self.data[self.start].label = '┏'
 
     def paint_pipes(self) -> None:
         """ Paint the pipes """
         # From top to bottom, left to right, Count pipes passed and paint odd numbered locations
+        inside_locations = 0
+        
+        for y in range(self.max.y + 1):
+            inside = False
+            inside_dir = None
+            row = ""
+            for x in range(self.max.x + 1):
+                if Point(x,y) in self.data:
+                    pipe = self.data[Point(x,y)]
+                    if pipe.distance is not None:
+                        #logger.info("This is a pipe can't paint")
+                        match (inside, inside_dir, self.data[Point(x,y)].label):
+                            case (_, _, '┃'):
+                                inside = not inside
+                                inside_dir = 'in' if inside else 'left'
+                            case (_, _, '━'):
+                                logger.debug("Do nothing?")
+                            case (_, _, '┏'):
+                                inside_dir = 'up' if inside else 'down'
+                            case (_, _, '┗'):
+                                inside_dir = 'down' if inside else 'up'
+                            case (_, _, '┓'):
+                                inside = True if inside_dir == 'up' else False
+                                inside_dir = 'in' if inside else 'down'
+                            case (_, _, '┛'):
+                                inside = True if inside_dir == 'down' else False
+                                inside_dir = 'in' if inside else 'up'
+
+                        row += self.data[Point(x,y)].label
+                        continue
+                if inside:
+                    row += 'I'
+                    inside_locations += 1
+                else:
+                    row += 'O'
+            logger.info(row)
+        return inside_locations
 
 
 def test_sanity():
@@ -273,8 +325,32 @@ def test_sample_2():
     longest = sketch.walk_pipes(starting_pipes)
     sketch.render(show_complete=True)
     logger.info(f"Longest: {longest}")
+    locations = sketch.paint_pipes()
+    assert locations == 4
+
+def test_sample_3():
+    """Test part 3"""
+    logger.info("")
+    sketch = Sketch(WORKING_DIR + 'input_sample3.txt')
+    sketch.render()
+    starting_pipes = sketch.get_starting_pipes()
+    longest = sketch.walk_pipes(starting_pipes)
+    sketch.render(show_complete=True)
+    logger.info(f"Longest: {longest}")
+    sketch.replace_starting_pipe()
+    locations = sketch.paint_pipes()
+    assert locations == 8
 
 
 def test_part_2():
     """Test part 2"""
     logger.info("")
+    sketch = Sketch(WORKING_DIR + 'input.txt')
+    sketch.render()
+    starting_pipes = sketch.get_starting_pipes()
+    longest = sketch.walk_pipes(starting_pipes)
+    sketch.render(show_complete=True)
+    logger.info(f"Longest: {longest}")
+    sketch.replace_starting_pipe()
+    locations = sketch.paint_pipes()
+    logger.info(f"Locations: {locations}")
