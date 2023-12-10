@@ -1,4 +1,5 @@
 [![codecov](https://codecov.io/gh/bmccool/AdventOfCode/graph/badge.svg?token=DY1GXUYL6N)](https://codecov.io/gh/bmccool/AdventOfCode)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/bmccool/AdventOfCode/ci.yaml?label=CI)
 
 <!--- advent_readme_stars table --->
 ## 2023 Results
