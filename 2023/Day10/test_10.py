@@ -53,19 +53,19 @@ class Point:
 class Pipe():
     def __init__(self, label: str, point: Point):
         # Ugh use pattern matching lol
-        if label is '|':
+        if label == '|':
             self.label = '┃'
-        elif label is '-':
+        elif label == '-':
             self.label = '━'
-        elif label is 'L':
+        elif label == 'L':
             self.label = '┗'
-        elif label is 'J':
+        elif label == 'J':
             self.label = '┛'
-        elif label is '7':
+        elif label == '7':
             self.label = '┓'
-        elif label is 'F':
+        elif label == 'F':
             self.label = '┏'
-        elif label is 'S':
+        elif label == 'S':
             self.label = 'S'
 
         self.prev: str = None
@@ -98,7 +98,7 @@ class Sketch:
                         self.max.y = y
                     if x > self.max.x:
                         self.max.x = x
-                    if char is not ' ' and char is not '\n' and char is not '.':
+                    if char != ' ' and char != '\n' and char != '.':
                         self.data[Point(x, y)] = Pipe(label=char, point=Point(x, y))
                         if char == 'S':
                             self.start = Point(x, y)
@@ -113,7 +113,7 @@ class Sketch:
                     row += str(self.data.get(Point(x, y), ' '))
                 else:
                     datapoint = self.data.get(Point(x, y), ' ')
-                    if datapoint is not ' ':
+                    if datapoint != ' ':
                         if datapoint.distance is None:
                             datapoint = ' '
                     row += str(datapoint)
@@ -354,3 +354,4 @@ def test_part_2():
     sketch.replace_starting_pipe()
     locations = sketch.paint_pipes()
     logger.info(f"Locations: {locations}")
+    assert locations == 445
