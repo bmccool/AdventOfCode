@@ -1,7 +1,7 @@
 """ Advent of Code 2023 Day 05 """
-from typing import List, Callable, Self
 from dataclasses import dataclass
 from itertools import combinations
+from typing import Callable, List, Self
 
 from pymccool.logging import Logger, LoggerKwargs
 
