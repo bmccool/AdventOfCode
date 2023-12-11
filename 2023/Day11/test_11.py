@@ -1,6 +1,7 @@
 """ Advent of Code 2023 Day 05 """
-from typing import List, Callable, Self, Dict
+from typing import List, Callable, Self
 from dataclasses import dataclass
+from itertools import combinations
 
 from pymccool.logging import Logger, LoggerKwargs
 
@@ -8,9 +9,7 @@ logger = Logger(LoggerKwargs(
     app_name="AOC2023",
 ))
 
-
 WORKING_DIR = '2023/Day11/'
-
 
 @dataclass
 class Point:
@@ -18,16 +17,8 @@ class Point:
     x: int
     y: int
 
-    def __add__(self, other: Self):
-        return Point(self.x + other.x, self.y + other.y)
-
     def __hash__(self):
         return hash((self.x, self.y))
-
-    def __eq__(self, other: Self):
-        if isinstance(other, Point):
-            return self.x == other.x and self.y == other.y
-        return False
 
     def __str__(self):
         return f"({self.x}, {self.y})"
@@ -35,25 +26,6 @@ class Point:
     def __repr__(self):
         return str(self)
 
-    def __sub__(self, other) -> Self:
-        return Point(self.x - other.x, self.y - other.y)
-
-    def up(self) -> Self:
-        """ Get the point directly above this one """
-        return self + Point(0, -1)
-
-    def down(self) -> Self:
-        """ Get the point directly below this one """
-        return self + Point(0, 1)
-
-    def left(self) -> Self:
-        """ Get the point directly left of this one """
-        return self + Point(-1, 0)
-
-    def right(self) -> Self:
-        """ Get the point directly right of this one """
-        return self + Point(1, 0)
-    
     def manhatten(self, other: Self) -> int:
         """ Get the manhatten distance between two points """
         return abs(self.x - other.x) + abs(self.y - other.y)
@@ -103,7 +75,8 @@ class Observation():
 
     def expand_rows(self, expansion_size: int=2):
         """ For each row that has no galxies, add a second blank row."""
-        expansion_size = expansion_size - 1 # Algorithm ADDS rows, but problem statement REPLACES rows.  We already have 1 row.
+        # Algorithm ADDS rows, but problem statement REPLACES rows.  We already have 1 row.
+        expansion_size = expansion_size - 1
         index = 0
         while True:
             if not any([galaxy.point.y == index for galaxy in self.galaxies]):
@@ -120,7 +93,8 @@ class Observation():
 
     def expand_columns(self, expansion_size: int=2):
         """ For each column that has no galxies, add a second blank column."""
-        expansion_size = expansion_size - 1 # Algorithm ADDS rows, but problem statement REPLACES cols.  We already have 1 cols.
+        # Algorithm ADDS rows, but problem statement REPLACES cols.  We already have 1 cols.
+        expansion_size = expansion_size - 1
         index = 0
         while True:
             if not any([galaxy.point.x == index for galaxy in self.galaxies]):
@@ -136,14 +110,16 @@ class Observation():
                 break
 
     def expand(self, expansion_size: int=2):
-        """ For each row that has no galxies, add a second blank row (or more).  Likewise for columns """
+        """
+        For each row that has no galxies, add a second blank row (or more).
+        Likewise for columns
+        """
         self.expand_rows(expansion_size=expansion_size)
         self.expand_columns(expansion_size=expansion_size)
 
     def get_sum_distances(self) -> int:
         """ Get all combinations of galaxies """
         total_distance = 0
-        from itertools import combinations
         combos = list(map(list, combinations(set(self.galaxies), 2)))
         logger.info(len(combos))
         for combo in combos:
@@ -154,7 +130,6 @@ class Observation():
 def test_sanity():
     """Sanity check """
     assert True
-
 
 def test_sample_1():
     """ Test Sample 1"""
@@ -168,7 +143,6 @@ def test_sample_1():
     logger.info(sum_distances)
     assert sum_distances == 374
 
-
 def test_part_1():
     """Test part 1"""
     logger.info("")
@@ -177,7 +151,6 @@ def test_part_1():
     sum_distances = observation.get_sum_distances()
     logger.info(sum_distances)
     assert sum_distances == 9639160
-
 
 def test_sample_2():
     """Test part 2"""
@@ -188,7 +161,6 @@ def test_sample_2():
     logger.info(sum_distances)
     assert sum_distances == 1030
 
-
 def test_part_2():
     """Test part 2"""
     logger.info("")
@@ -196,3 +168,4 @@ def test_part_2():
     observation.expand(expansion_size=1_000_000)
     sum_distances = observation.get_sum_distances()
     logger.info(sum_distances)
+    assert sum_distances == 752_936_133_304
