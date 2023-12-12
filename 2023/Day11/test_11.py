@@ -1,34 +1,15 @@
 """ Advent of Code 2023 Day 05 """
-from dataclasses import dataclass
 from itertools import combinations
-from typing import Callable, List, Self
+from typing import Callable, List
 
 from pymccool.logging import Logger, LoggerKwargs
+from pymccool.math import Point
 
 logger = Logger(LoggerKwargs(
     app_name="AOC2023",
 ))
 
 WORKING_DIR = '2023/Day11/'
-
-@dataclass
-class Point:
-    """ A point in 2D space """
-    x: int
-    y: int
-
-    def __hash__(self):
-        return hash((self.x, self.y))
-
-    def __str__(self):
-        return f"({self.x}, {self.y})"
-
-    def __repr__(self):
-        return str(self)
-
-    def manhatten(self, other: Self) -> int:
-        """ Get the manhatten distance between two points """
-        return abs(self.x - other.x) + abs(self.y - other.y)
 
 class Galaxy():
     """ A pipe, with a label and a point"""

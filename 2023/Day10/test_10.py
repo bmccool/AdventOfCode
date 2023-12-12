@@ -1,8 +1,8 @@
 """ Advent of Code 2023 Day 05 """
 from typing import List, Callable, Self, Dict
-from dataclasses import dataclass
 
 from pymccool.logging import Logger, LoggerKwargs
+from pymccool.math import Point
 
 logger = Logger(LoggerKwargs(
     app_name="AOC2023",
@@ -10,49 +10,6 @@ logger = Logger(LoggerKwargs(
 
 
 WORKING_DIR = '2023/Day10/'
-
-
-@dataclass
-class Point:
-    """ A point in 2D space """
-    x: int
-    y: int
-
-    def __add__(self, other: Self):
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __hash__(self):
-        return hash((self.x, self.y))
-
-    def __eq__(self, other: Self):
-        if isinstance(other, Point):
-            return self.x == other.x and self.y == other.y
-        return False
-
-    def __str__(self):
-        return f"({self.x}, {self.y})"
-
-    def __repr__(self):
-        return str(self)
-
-    def __sub__(self, other) -> Self:
-        return Point(self.x - other.x, self.y - other.y)
-
-    def up(self) -> Self:
-        """ Get the point directly above this one """
-        return self + Point(0, -1)
-
-    def down(self) -> Self:
-        """ Get the point directly below this one """
-        return self + Point(0, 1)
-
-    def left(self) -> Self:
-        """ Get the point directly left of this one """
-        return self + Point(-1, 0)
-
-    def right(self) -> Self:
-        """ Get the point directly right of this one """
-        return self + Point(1, 0)
 
 class Pipe():
     """ A pipe, with a label and a point"""
