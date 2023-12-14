@@ -40,14 +40,21 @@ class RockPattern:
         return '.'
     
     @staticmethod
-    def sort_string(string: str, _reverse=False) -> str:
+    def sort_string(sort_string: str, reverse=False) -> str:
         """ Sort a string """
-        parts = [p + "#" for p in string.split("#")]
-        parts[-1] = parts[-1][:-1]
-        assert len(string) == len("".join(parts))
+        parts = []
+        index = 0
+        for cube_rock_chunk in re.finditer(r"#+", sort_string):
+            parts.append(sort_string[index:cube_rock_chunk.span()[0]])
+            parts.append(cube_rock_chunk[0])
+            index = cube_rock_chunk.span()[1]
+        if index < len(sort_string):
+            parts.append(sort_string[index:])
+
+        assert len(sort_string) == len("".join(parts))
         ret_val = ""
         for part in parts:
-            ret_val += "".join(sorted(part, reverse=True))
+            ret_val += "".join(sorted(part, reverse=reverse))
         return ret_val
     
     def tilt_north(self):
@@ -56,7 +63,7 @@ class RockPattern:
             column_str: str = ""
             for row in range(self.max.y + 1):
                 column_str += self.get_point(Point(column, row))
-            column_str = self.sort_string(column_str)
+            column_str = self.sort_string(column_str, reverse=True)
 
             # This column should match column string.  Pop everything out of this column, and readd as per column_str
             for row in range(self.max.y + 1):
@@ -78,7 +85,7 @@ class RockPattern:
             column_str: str = ""
             for row in range(self.max.y + 1):
                 column_str += self.get_point(Point(column, row))
-            column_str = self.sort_string(column_str, _reverse=True)
+            column_str = self.sort_string(column_str, reverse=False)
 
             # This column should match column string.  Pop everything out of this column, and readd as per column_str
             for row in range(self.max.y + 1):
@@ -100,7 +107,7 @@ class RockPattern:
             row_str: str = ""
             for column in range(self.max.x):
                 row_str += self.get_point(Point(column, row))
-            row_str = self.sort_string(row_str)
+            row_str = self.sort_string(row_str, reverse=True)
 
             # This row should match row string.  Pop everything out of this row, and readd as per row_str
             for column in range(self.max.x):
@@ -116,6 +123,27 @@ class RockPattern:
                     elif row_str[column] == '#':
                         self.cube_rocks.append(Point(column, row))
 
+    def tilt_east(self):
+        """ Tilt the pattern east """
+        for row in range(self.max.y + 1):
+            row_str: str = ""
+            for column in range(self.max.x):
+                row_str += self.get_point(Point(column, row))
+            row_str = self.sort_string(row_str, reverse=False)
+
+            # This row should match row string.  Pop everything out of this row, and readd as per row_str
+            for column in range(self.max.x):
+                if row_str[column] == self.get_point(Point(column, row)):
+                    continue
+                else:
+                    if self.get_point(Point(column, row)) == 'O':
+                        self.round_rocks.remove(Point(column, row))
+                    elif self.get_point(Point(column, row)) == '#':
+                        self.cube_rocks.remove(Point(column, row))
+                    if row_str[column] == 'O':
+                        self.round_rocks.append(Point(column, row))
+                    elif row_str[column] == '#':
+                        self.cube_rocks.append(Point(column, row))
 
 
 
@@ -136,6 +164,12 @@ class RockPattern:
 
         return total_load
 
+    def cycle(self) -> None:
+        """ Cycle the pattern """
+        self.tilt_north()
+        self.tilt_west()
+        self.tilt_south()
+        self.tilt_east()
 
 class PatternEater:
     """ Class to parse multiple rock patterns from a file input """
@@ -187,16 +221,26 @@ def test_sample_2():
     logger.info("")
     pattern_eater = PatternEater(WORKING_DIR + 'input_sample.txt')
     pattern_eater.pattern.render()
-    logger.info("Tilting North")
-    pattern_eater.pattern.tilt_north()
-    pattern_eater.pattern.render()
-    logger.info("Tilting West")
-    pattern_eater.pattern.tilt_west()
-    pattern_eater.pattern.render()
-    logger.info("Tilting South")
-    pattern_eater.pattern.tilt_south()
-    pattern_eater.pattern.render()
-    #load = pattern_eater.pattern.calculate_load()
+    #logger.info("Tilting North")
+    #pattern_eater.pattern.tilt_north()
+    #pattern_eater.pattern.render()
+    #logger.info("Tilting West")
+    #pattern_eater.pattern.tilt_west()
+    #pattern_eater.pattern.render()
+    #logger.info("Tilting South")
+    #pattern_eater.pattern.tilt_south()
+    #pattern_eater.pattern.render()
+    #logger.info("Tilting East")
+    #pattern_eater.pattern.tilt_east()
+    #pattern_eater.pattern.render()
+    for _ in range(1_000):
+        pattern_eater.pattern.cycle()
+        pattern_eater.pattern.render()
+        if _ % 1_000 == 0:
+            logger.info(f"Cycle: {_}.  {100 * _ / 1_000_000_000:2}% done")
+
+    load = pattern_eater.pattern.calculate_load()
+    logger.info(f"Load is {load}")
 
 def test_part_2():
     """Test part 2"""
