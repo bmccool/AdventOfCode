@@ -1,5 +1,6 @@
 """ Advent of Code 2023 Day 12 """
-from typing import List, Tuple
+from typing import List, Tuple, Dict
+from sortedcontainers import SortedSet
 from functools import lru_cache
 import re
 from pymccool.math import Point
@@ -12,14 +13,23 @@ logger = Logger(LoggerKwargs(
 
 WORKING_DIR = '2023/Day14/'
 
-
+class HashableSortedSet(SortedSet):
+    def __hash__(self):
+        return hash(str(self))
 
 class RockPattern:
     """ An observation of rock and ash patterns """
     def __init__(self):
-        self.round_rocks: List[Point] = []
-        self.cube_rocks: List[Point] = []
+        self.round_rocks: HashableSortedSet[Point] = HashableSortedSet()
+        self.cube_rocks: HashableSortedSet[Point] = HashableSortedSet()
         self.max: Point = Point(-1, -1)
+        self.map_str: str = ""
+
+
+
+    def __hash__(self):
+        """ Hash the pattern """
+        return hash(self.map_str)
 
     def parse_line(self, line: str):
         """ Parse a line of the input file """
@@ -27,9 +37,9 @@ class RockPattern:
         self.max = Point(max(self.max.x, len(line)), self.max.y + 1)
         for i, char in enumerate(line):
             if char == 'O':
-                self.round_rocks.append(Point(i, self.max.y))
+                self.round_rocks.add(Point(i, self.max.y))
             elif char == '#':
-                self.cube_rocks.append(Point(i, self.max.y))
+                self.cube_rocks.add(Point(i, self.max.y))
 
     def get_point(self, point: Point) -> str:
         """ Get the character at a point """
@@ -57,7 +67,8 @@ class RockPattern:
             ret_val += "".join(sorted(part, reverse=reverse))
         return ret_val
     
-    def tilt_north(self):
+    @lru_cache
+    def tilt_north(self, round_rocks: SortedSet[Point], cube_rocks: SortedSet[Point]):
         """ Tilt the pattern north """
         for column in range(self.max.x):
             column_str: str = ""
@@ -70,16 +81,19 @@ class RockPattern:
                 if column_str[row] == self.get_point(Point(column, row)):
                     continue
                 else:
-                    if self.get_point(Point(column, row)) == 'O':
-                        self.round_rocks.remove(Point(column, row))
-                    elif self.get_point(Point(column, row)) == '#':
-                        self.cube_rocks.remove(Point(column, row))
+                    if Point(column, row) in round_rocks:
+                        if not column_str[row] == 'O':
+                            round_rocks.remove(Point(column, row))
+                    elif Point(column, row) in cube_rocks:
+                        if not column_str[row] == '#':
+                            cube_rocks.remove(Point(column, row))
                     if column_str[row] == 'O':
-                        self.round_rocks.append(Point(column, row))
+                        round_rocks.add(Point(column, row))
                     elif column_str[row] == '#':
-                        self.cube_rocks.append(Point(column, row))
+                        cube_rocks.add(Point(column, row))
 
-    def tilt_south(self):
+    @lru_cache
+    def tilt_south(self, round_rocks: SortedSet[Point], cube_rocks: SortedSet[Point]):
         """ Tilt the pattern south """
         for column in range(self.max.x):
             column_str: str = ""
@@ -92,16 +106,19 @@ class RockPattern:
                 if column_str[row] == self.get_point(Point(column, row)):
                     continue
                 else:
-                    if self.get_point(Point(column, row)) == 'O':
-                        self.round_rocks.remove(Point(column, row))
-                    elif self.get_point(Point(column, row)) == '#':
-                        self.cube_rocks.remove(Point(column, row))
+                    if Point(column, row) in round_rocks:
+                        if not column_str[row] == 'O':
+                            round_rocks.remove(Point(column, row))
+                    elif Point(column, row) in cube_rocks:
+                        if not column_str[row] == '#':
+                            cube_rocks.remove(Point(column, row))
                     if column_str[row] == 'O':
-                        self.round_rocks.append(Point(column, row))
+                        round_rocks.add(Point(column, row))
                     elif column_str[row] == '#':
-                        self.cube_rocks.append(Point(column, row))
+                        cube_rocks.add(Point(column, row))
 
-    def tilt_west(self):
+    @lru_cache
+    def tilt_west(self, round_rocks: SortedSet[Point], cube_rocks: SortedSet[Point]):
         """ Tilt the pattern west """
         for row in range(self.max.y + 1):
             row_str: str = ""
@@ -114,16 +131,18 @@ class RockPattern:
                 if row_str[column] == self.get_point(Point(column, row)):
                     continue
                 else:
-                    if self.get_point(Point(column, row)) == 'O':
-                        self.round_rocks.remove(Point(column, row))
-                    elif self.get_point(Point(column, row)) == '#':
-                        self.cube_rocks.remove(Point(column, row))
+                    if Point(column, row) in round_rocks:
+                        if not row_str[column] == 'O':
+                            round_rocks.remove(Point(column, row))
+                    elif Point(column, row) in cube_rocks:
+                        if not row_str[column] == '#':
+                            cube_rocks.remove(Point(column, row))
                     if row_str[column] == 'O':
-                        self.round_rocks.append(Point(column, row))
+                        round_rocks.add(Point(column, row))
                     elif row_str[column] == '#':
-                        self.cube_rocks.append(Point(column, row))
-
-    def tilt_east(self):
+                        cube_rocks.add(Point(column, row))
+    @lru_cache
+    def tilt_east(self, round_rocks: SortedSet[Point], cube_rocks: SortedSet[Point]):
         """ Tilt the pattern east """
         for row in range(self.max.y + 1):
             row_str: str = ""
@@ -136,14 +155,16 @@ class RockPattern:
                 if row_str[column] == self.get_point(Point(column, row)):
                     continue
                 else:
-                    if self.get_point(Point(column, row)) == 'O':
-                        self.round_rocks.remove(Point(column, row))
-                    elif self.get_point(Point(column, row)) == '#':
-                        self.cube_rocks.remove(Point(column, row))
+                    if Point(column, row) in round_rocks:
+                        if not row_str[column] == 'O':
+                            round_rocks.remove(Point(column, row))
+                    elif Point(column, row) in cube_rocks:
+                        if not row_str[column] == '#':
+                            cube_rocks.remove(Point(column, row))
                     if row_str[column] == 'O':
-                        self.round_rocks.append(Point(column, row))
+                        round_rocks.add(Point(column, row))
                     elif row_str[column] == '#':
-                        self.cube_rocks.append(Point(column, row))
+                        cube_rocks.add(Point(column, row))
 
 
 
@@ -166,10 +187,10 @@ class RockPattern:
 
     def cycle(self) -> None:
         """ Cycle the pattern """
-        self.tilt_north()
-        self.tilt_west()
-        self.tilt_south()
-        self.tilt_east()
+        self.tilt_north(self.round_rocks, self.cube_rocks)
+        self.tilt_west(self.round_rocks, self.cube_rocks)
+        self.tilt_south(self.round_rocks, self.cube_rocks)
+        self.tilt_east(self.round_rocks, self.cube_rocks)
 
 class PatternEater:
     """ Class to parse multiple rock patterns from a file input """
@@ -191,9 +212,9 @@ def test_sanity():
 
 def test_sort_string():
     logger.info("")
-    assert RockPattern.sort_string("OO.O.O..##") == "OOOO....##"
-    assert RockPattern.sort_string("O..O.#O.O") == "OO...#OO."
-    assert RockPattern.sort_string("O..O.###O.O") == "OO...###OO."
+    assert RockPattern.sort_string("OO.O.O..##", reverse=True) == "OOOO....##"
+    assert RockPattern.sort_string("O..O.#O.O", reverse=True) == "OO...#OO."
+    assert RockPattern.sort_string("O..O.###O.O", reverse=True) == "OO...###OO."
     
 
 def test_sample_1():
@@ -201,7 +222,7 @@ def test_sample_1():
     logger.info("")
     pattern_eater = PatternEater(WORKING_DIR + 'input_sample.txt')
     pattern_eater.pattern.render()
-    pattern_eater.pattern.tilt_north()
+    pattern_eater.pattern.tilt_north(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks)
     pattern_eater.pattern.render()
     load = pattern_eater.pattern.calculate_load()
     logger.info(f"Load is {load}")
@@ -211,32 +232,34 @@ def test_part_1():
     logger.info("")
     pattern_eater = PatternEater(WORKING_DIR + 'input.txt')
     #pattern_eater.pattern.render()
-    pattern_eater.pattern.tilt_north()
+    pattern_eater.pattern.tilt_north(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks)
     #pattern_eater.pattern.render()
     load = pattern_eater.pattern.calculate_load()
     logger.info(f"Load is {load}")
+    assert load == 108_955
 
-def test_sample_2():
+
+def test_profile_this():
     """Test part 2"""
     logger.info("")
     pattern_eater = PatternEater(WORKING_DIR + 'input_sample.txt')
     pattern_eater.pattern.render()
     #logger.info("Tilting North")
-    #pattern_eater.pattern.tilt_north()
+    #pattern_eater.pattern.tilt_north(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks)
     #pattern_eater.pattern.render()
     #logger.info("Tilting West")
-    #pattern_eater.pattern.tilt_west()
+    #pattern_eater.pattern.tilt_west(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks)
     #pattern_eater.pattern.render()
     #logger.info("Tilting South")
-    #pattern_eater.pattern.tilt_south()
+    #pattern_eater.pattern.tilt_south(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks)
     #pattern_eater.pattern.render()
     #logger.info("Tilting East")
-    #pattern_eater.pattern.tilt_east()
+    #pattern_eater.pattern.tilt_east(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks)
     #pattern_eater.pattern.render()
-    for _ in range(1_000):
+    for _ in range(1_000_000_000):
         pattern_eater.pattern.cycle()
-        pattern_eater.pattern.render()
-        if _ % 1_000 == 0:
+        #pattern_eater.pattern.render()
+        if _ % 10_000 == 0:
             logger.info(f"Cycle: {_}.  {100 * _ / 1_000_000_000:2}% done")
 
     load = pattern_eater.pattern.calculate_load()
