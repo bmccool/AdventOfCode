@@ -252,54 +252,6 @@ def test_part_1():
     logger.info(f"Load is {load}")
     assert load == 108_955
 
-
-def test_profile_this():
-    """Test part 2"""
-    logger.info("")
-    pattern_eater = PatternEater(WORKING_DIR + 'input_sample.txt')
-    pattern_eater.pattern.render()
-    consecutive_hash_hits = 0
-    last_hash = 0
-    for _ in range(1_000_000_000):
-        if _ in [1, 2, 3]:
-            pattern_eater.pattern.render()
-        pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks = RockPattern.cycle(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks, pattern_eater.pattern.max)
-        #h = hash((pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks))
-        #if h == last_hash:
-        #    logger.info(f"Found a cycle at {_}, hash: {h}")
-        #    consecutive_hash_hits += 1
-        #    if consecutive_hash_hits > 1_000:
-        #        pattern_eater.pattern.render()
-        #    if consecutive_hash_hits > 1_005:
-        #        break
-        #else:
-        #    logger.info(f"No cycle found.       hash: {h}")
-        #    consecutive_hash_hits = 0
-        #pattern_eater.pattern.hashes.add(h)
-        #last_hash = h
-        #pattern_eater.pattern.render()
-        if _ % 10_000 == 0:
-            logger.info(f"Cycle: {_}.  {100 * _ / 1_000_000_000:2}% done")
-
-    load = pattern_eater.pattern.calculate_load()
-    logger.info(f"Load is {load}")
-
-def test_part_2():
-    """Test part 2"""
-    logger.info("")
-    pattern_eater = PatternEater(WORKING_DIR + 'input.txt')
-    pattern_eater.pattern.render()
-    consecutive_hash_hits = 0
-    last_hash = 0
-    for _ in range(1_000_000_000):
-        if _ in [1, 2, 3]:
-            pattern_eater.pattern.render()
-        pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks = RockPattern.cycle(pattern_eater.pattern.round_rocks, pattern_eater.pattern.cube_rocks, pattern_eater.pattern.max)
-        if _ % 10_000 == 0:
-            logger.info(f"Cycle: {_}.  {100 * _ / 1_000_000_000:2}% done")
-
-    load = pattern_eater.pattern.calculate_load()
-    logger.info(f"Load is {load}")
         
 
 def parse(filename = WORKING_DIR + 'input.txt') -> List[str]:
@@ -350,6 +302,7 @@ def test_part_1_fast():
     render(board)
     load = calculate_load(board)
     logger.info(f"Load is {load}")
+    assert load == 136
 
 def test_part_2_fast():
     """
@@ -389,3 +342,4 @@ def test_part_2_fast():
     render(board)
     load = calculate_load(board)
     logger.info(f"Load is {load}")
+    assert load == 106_689
