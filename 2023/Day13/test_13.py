@@ -1,7 +1,5 @@
 """ Advent of Code 2023 Day 12 """
-from typing import List, Tuple
-from functools import lru_cache
-import re
+from typing import List
 from pymccool.math import Point
 
 from pymccool.logging import Logger, LoggerKwargs
