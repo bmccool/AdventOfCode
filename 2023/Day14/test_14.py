@@ -1,8 +1,8 @@
 """ Advent of Code 2023 Day 12 """
-from typing import List, Tuple, Dict
-from sortedcontainers import SortedSet
+from typing import List, Dict
 from functools import lru_cache
 import re
+from sortedcontainers import SortedSet
 from pymccool.math import Point
 
 from pymccool.logging import Logger, LoggerKwargs
