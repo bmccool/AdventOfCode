@@ -19,7 +19,7 @@ jobs:
     steps:
       # Checkout the latest code from the repo
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       # Setup which version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
